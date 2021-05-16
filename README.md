@@ -5,10 +5,14 @@ Google Sheets Addon that gets data from the CoinMarketCap API...
 * Supports all cryptos / fiats listed on https://coinmarketcap.com/
     * Covers all your marginal coins/tokens/shitcoins/shillcoins/moonshots/deepddhonies
 * Works 100% with *FREE* CoinMarketCap API accounts
-* Caches API responses to help reduce the number of calls and keep within your rate-limits
+    * Caches API responses to help reduce the number of calls and keep within your rate-limits
     * Great for free-tier accounts which have the lowest rate-limits
 * Supports over 25 coin attributes
-    * latest prices, changes, market cap, trading volume, token supply, FCAS grades & all sorts of other metadata
+    * Latest prices and % change over 1h, 24h, 7d & 30d ranges
+    * Latest market cap and 24h trading volume
+    * Tokenomics
+    * Latest FCAS scores and grades
+    * And all sorts of other metadata
 * Convert prices between any crypto / fiat combination
 
 SpodyCoiner pulls data only, it does not push data anywhwere, at any time. And it never will. Ever. See `POLICY.md` for further info.
@@ -18,8 +22,15 @@ SpodyCoiner pulls data only, it does not push data anywhwere, at any time. And i
 
 These work just like any standard function in Google Sheets...
 
-* `=SPODDYCOINER` - get latest coin prices / data / metadata
-* `=SPODDYCOINER_CONVERT` - convert an amount between two coins or currencies
+* `=SPODDYCOINER(coin, [attribute], [fiat])`
+    * Get latest coin prices / data / metadata about `coin`
+    * Default `attribute` is "price". See below for full list of supported attributes.
+    * Some attribues (such as "price" or "market_cap") will be returned in `fiat` value
+    * Default `fiat` currency can be set in the Addons -> SpoddyCoiner menu
+
+* `=SPODDYCOINER_CONVERT(coin, amount, coin)`
+    * Convert an `amount` from one `coin` to another
+    * `coin` can also be a currency code
 
 (all prices/quotes/conversions use CoinMarketCap latest market rates)
 
