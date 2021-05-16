@@ -86,6 +86,7 @@ Controller.SpoddyCoiner = {
         var coin_data = Model.CMCApi.getFCASQuoteLatest( coin );
         if( ! coin_data.error_message ) {
           value = coin_data[attribute.replace( 'fcas_', '' )];
+          value = ( attribute === "fcas_percent_change_24h" ) ? value / 100 : value;    // make compatible with standard Google Sheets percentage format
           Logger.log( `${coin} ${attribute} : ${value}` ); 
         }
         break;      
