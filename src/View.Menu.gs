@@ -16,12 +16,12 @@ View.Menu = {
    */
   SUPPORTED_ATTRIBUTES: {
     "price": "latest price in fiat currency",
+    "price_percent_change_1h": "price change over last 1h",
+    "price_percent_change_24h": "price change over last 24h",
+    "price_percent_change_7d": "price change over last 7d",
+    "price_percent_change_30d": "price change over last 30d",
     "market_cap": "latest market capitalization in fiat currency",
     "volume_24h": "24h trading volume",
-    "percent_change_1h": "1h trading volume change as a percentage",
-    "percent_change_24h": "24h trading volume change as a percentage",
-    "percent_change_7d": "7d trading volume change as a percentage",
-    "percent_change_30d": "30d trading volume change as a percentage",
     "circulating_supply": "number of coins/tokens currently circulating",
     "total_supply": "total number of coins/tokens potentially available",
     "max_supply": "maximum number of coins/tokens that will ever be available (some coins do not have a max supply)",
