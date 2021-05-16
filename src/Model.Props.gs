@@ -6,7 +6,7 @@ Model.Props = {
   CMC_API_KEY: "cmc_api_key",
   DEFAULT_CURRENCY: "default_currency",
   API_CACHE_TIME: "api_cache_time",
-  DISPLAY_ERROR_MESSAGES: true,
+  DISPLAY_ERROR_MESSAGES: "display_error_messages",
 
 
   /**
