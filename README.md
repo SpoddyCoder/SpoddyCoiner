@@ -7,10 +7,10 @@ This Addon works 100% with *FREE* CoinMarketCap API accounts. Caches the respons
 
 ## Custom Functions
 
-These work just like any standard function in a cell...
+These work just like any standard function in Google Sheets...
 
-* `SPODDYCOINER` - get latest coin prices, market cap, trading volume, token supply, FCAS grades & all sorts of other metadata
-* `SPODDYCOINER_CONVERT` - convert an amount between two coins or currencies
+* `=SPODDYCOINER` - get latest coin prices, changes, market cap, trading volume, token supply, FCAS grades & all sorts of other metadata
+* `=SPODDYCOINER_CONVERT` - convert an amount between two coins or currencies
 
 ### Notes
 
@@ -45,26 +45,27 @@ These work just like any standard function in a cell...
 The `SPODDYCOINER` function supports the following `attributes`...
 
 * `price` - latest price in fiat currency
+* `price_percent_change_1h` - price change over last 1h
+* `price_percent_change_24h` - price change over last 24h
+* `price_percent_change_7d` - price change over last 7d
+* `price_percent_change_30d` - price change over last 30d
 * `market_cap` - latest market capitalization in fiat currency
 * `volume_24h` - 24h trading volume
-* `percent_change_1h` - 1h trading volume change as a percentage
-* `percent_change_24h` - 24h trading volume change as a percentage
-* `percent_change_7d` - 7d trading volume change as a percentage
-* `percent_change_30d` - 30d trading volume change as a percentage
 * `circulating_supply` - number of coins/tokens currently circulating
 * `total_supply` - total number of coins/tokens potentially available
 * `max_supply` - maximum number of coins/tokens that will ever be available (some coins do not have a max supply)
 * `fcas_score` - Fundamental Crypto Asset Score (0-1000), a measure of the fundamental health of crypto projects (only the top 300-400 coins are rated)
 * `fcas_grade` -  FCAS Grade (S,A,B,C,E,F)
 * `fcas_grade_full` - Full FCAS Grade description (Superb,Attractive,Basic,Caution,Fragile)
-* `fcas_point_change_24h` - 24h change in score
-* `fcas_percent_change_24h` - 24h change in score as a percentage
+* `fcas_point_change_24h` - 24h change in FCAS score
+* `fcas_percent_change_24h` - 24h change in FCAS score as a percentage
 * `name` - coin name
 * `description` - full description of the project, history and purpose
-* `logo` - the logo url
+* `logo` - logo url (Tip: wrap this in the Google Sheets `IMAGE` function to show it in the cell, eg: `=IMAGE(SPODDYCOINER("BTC", "logo"))`)
 * `date_added` - date added to CoinMarketCap (effectively the date it started)
 * `year_added` - year added to CoinMarketCap
 * `tags` - comma seperated list of all tags
+* `tags_top_5` - comma seperated list of the first 5 tags
 * `url_website` - primary website for the project (if more than 1, only 1st returned)
 * `url_technical_doc` - whitepaper tech document for the project (if more than 1, only 1st returned)
 * `url_explorer` - blockchain explorer for the coin/token (if more than 1, only 1st returned)
