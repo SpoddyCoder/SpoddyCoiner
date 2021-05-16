@@ -112,9 +112,12 @@ Controller.SpoddyCoiner = {
         break;
 
       case 'tags':
+      case 'tags_top_5':
         var coin_data = Model.CMCApi.getCryptoMetadata( coin );
         if( ! coin_data.error_message ) {
-          value = coin_data[attribute].join(", ");   // return a CSV list of all the tags
+          var tags = coin_data['tags'];
+          tags = ( attribute === 'tags_top_5' ) ? tags.slice( 0, 5 ) : tags;
+          value = tags.join(", ");   // return a CSV list
           Logger.log( `${coin} ${attribute} : ${value}` ); 
         }
         break; 

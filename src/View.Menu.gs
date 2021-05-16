@@ -36,6 +36,7 @@ View.Menu = {
     "date_added": "date added to CoinMarketCap (effectively the date it started)",
     "year_added": "year added to CoinMarketCap",
     "tags": "comma seperated list of all tags",
+    "tags_top_5": "comma seperated list of the first 5 tags",
     "url_website": "primary website for the project (if more than 1, only 1st returned)",
     "url_technical_doc": "whitepaper tech document for the project (if more than 1, only 1st returned)",
     "url_explorer": "blockchain explorer for the coin/token (if more than 1, only 1st returned)",
