@@ -67,7 +67,7 @@ Model.CMCApi = {
     var return_data = Model.CMCApi.call( Model.CMCApi.PARTNERS_FCAS_QUOTES_LATEST, query );
     if ( return_data.error_message.includes( "No data found" ) ) {
       return_data.error_message = "";   // not expecting all coins to be supported, so don't show this as an error
-      return_data.grade = "";
+      return_data.score = "";
     }
     return return_data;
   },
