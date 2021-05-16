@@ -9,7 +9,7 @@ Breaking changes between versions will be highligted.
 * Ideas a comin'... 
 
 
-## [1.0.3] - 2021-06-16
+## [1.0.3] - 2021-05-16
 
 * Added: a changelog
 * Fixed: incorrect property key name for display_error_messages
@@ -17,7 +17,7 @@ Breaking changes between versions will be highligted.
 * Breaking Changes: none
 
 
-## [1.0.2] - 2021-06-16
+## [1.0.2] - 2021-05-16
 
 * Added: lots
 * Fixed: 
