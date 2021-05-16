@@ -25,7 +25,7 @@ These work just like any standard function in Google Sheets...
 * `=SPODDYCOINER(coin, [attribute], [fiat])`
     * Get latest coin prices / data / metadata about `coin`
     * Default `attribute` is "price". See below for full list of supported attributes.
-    * Some attribues (such as "price" or "market_cap") will be returned in `fiat` value
+    * Some attribues (such as "price" or "market_cap") will be returned in `fiat` currency
     * Default `fiat` currency can be set in the Addons -> SpoddyCoiner menu
 
 * `=SPODDYCOINER_CONVERT(coin, amount, coin)`
