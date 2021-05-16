@@ -54,7 +54,7 @@ Controller.SpoddyCoiner = {
       case 'percent_change_24h': 
       case 'percent_change_7d': 
       case 'percent_change_30d': 
-        coin_data = Model.CMCApi.getQuoteLatest( coin, fiat );
+        coin_data = Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
         if( ! coin_data.error_message ) {
           value = coin_data.quote[fiat][attribute];
           Logger.log( `${coin} ${attribute} : ${value}` ); 
