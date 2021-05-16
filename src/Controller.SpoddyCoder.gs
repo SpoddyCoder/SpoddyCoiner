@@ -94,7 +94,6 @@ Controller.SpoddyCoiner = {
       case 'name':
       case 'description':
       case 'logo':
-      case 'date_added':
         var coin_data = Model.CMCApi.getCryptoMetadata( coin );
         if( ! coin_data.error_message ) {
           value = coin_data[attribute];
@@ -102,10 +101,12 @@ Controller.SpoddyCoiner = {
         }
         break;
 
+      case 'date_added':
       case 'year_added':
         var coin_data = Model.CMCApi.getCryptoMetadata( coin );
         if( ! coin_data.error_message ) {
-          value = new Date(coin_data['date_added']).getFullYear();
+          value = new Date( coin_data['date_added'] );    // convert to GS native date format
+          value = ( attribute === "year_added" ) ? value.getFullYear() : value;
           Logger.log( `${coin} ${attribute} : ${value}` ); 
         }
         break;
