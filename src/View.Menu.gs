@@ -32,7 +32,7 @@ View.Menu = {
     "fcas_point_change_24h": "24h change in score as a percentage",
     "name": "coin name",
     "description": "full description of the project, history and purpose",
-    "logo": "logo url, Top Tip: wrap this in the Google Sheets IMAGE function to show it in the cell, eg: =IMAGE(SPODDYCOINER("BTC", "logo"))",
+    "logo": "logo url (Tip: wrap this in the Google Sheets IMAGE function to show it in the cell)",
     "date_added": "date added to CoinMarketCap (effectively the date it started)",
     "year_added": "year added to CoinMarketCap",
     "tags": "comma seperated list of all tags",
