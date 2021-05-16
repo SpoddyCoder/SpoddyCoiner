@@ -1,22 +1,27 @@
 # SpoddyCoiner
 
-Google Sheets Addon that gets data from the CoinMarketCap API - supports all your marginal crypto/coins/tokens/shitcoins/shillcoins/moonshots/deepddhonies. 
+Google Sheets Addon that gets data from the CoinMarketCap API...
 
-This Addon works 100% with *FREE* CoinMarketCap API accounts. Caches the response to help reduce the number of API calls and keep within your rate-limits, great for free CMC accounts which have the lowest rate-limits :)
+* Supports all cryptos / fiats listed on https://coinmarketcap.com/
+    * Covers all your marginal coins/tokens/shitcoins/shillcoins/moonshots/deepddhonies
+* Works 100% with *FREE* CoinMarketCap API accounts
+* Caches API responses to help reduce the number of calls and keep within your rate-limits
+    * Great for free-tier accounts which have the lowest rate-limits
+* Supports over 25 coin attributes
+    * latest prices, changes, market cap, trading volume, token supply, FCAS grades & all sorts of other metadata
+* Convert prices between any crypto / fiat combination
+
+SpodyCoiner pulls data only, it does not push data anywhwere, at any time. And it never will. Ever. See `POLICY.md` for further info.
 
 
 ## Custom Functions
 
 These work just like any standard function in Google Sheets...
 
-* `=SPODDYCOINER` - get latest coin prices, changes, market cap, trading volume, token supply, FCAS grades & all sorts of other metadata
+* `=SPODDYCOINER` - get latest coin prices / data / metadata
 * `=SPODDYCOINER_CONVERT` - convert an amount between two coins or currencies
 
-### Notes
-
-* All prices/quotes/conversions use CoinMarketCap latest market rates.
-* Currently all SpoddyCoiner functions / attributes are available to *FREE* CoinMarketCap API accounts
-    * We may support the premium CoinMarket API methods in later releases
+(all prices/quotes/conversions use CoinMarketCap latest market rates)
 
 
 ## Usage
@@ -70,3 +75,12 @@ The `SPODDYCOINER` function supports the following `attributes`...
 * `url_technical_doc` - whitepaper tech document for the project (if more than 1, only 1st returned)
 * `url_explorer` - blockchain explorer for the coin/token (if more than 1, only 1st returned)
 * `url_source_code` - github url for the project source code (if available)
+
+
+### About the API Cache
+
+The API cache is your friend :) It stops API calls being repeated unecessarily, helping to keep inside your rate-limit. Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchase a higher tier to increase this.
+
+* Default cache time is 1 hour - the data you see may be up to 1 hour old
+* Cache time can be changed in the Addons -> SpoddyCoiner menu, the maximum is 6 hours (21600 seconds)
+* Cache can be cleared at any time in the Addons -> SpoddyCoiner menu
