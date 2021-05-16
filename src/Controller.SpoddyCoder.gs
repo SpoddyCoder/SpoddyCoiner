@@ -50,13 +50,13 @@ Controller.SpoddyCoiner = {
         }
         break;
 
-      case 'percent_change_1h':
-      case 'percent_change_24h': 
-      case 'percent_change_7d': 
-      case 'percent_change_30d': 
+      case 'price_percent_change_1h':
+      case 'price_percent_change_24h': 
+      case 'price_percent_change_7d': 
+      case 'price_percent_change_30d': 
         coin_data = Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
         if( ! coin_data.error_message ) {
-          value = coin_data.quote[fiat][attribute] / 100;   // make compatible with standard Google Sheets percentage format
+          value = coin_data.quote[fiat][attribute.replace( 'price_', '' )] / 100;   // make compatible with standard Google Sheets percentage format
           Logger.log( `${coin} ${attribute} : ${value}` ); 
         }
         break;
