@@ -9,7 +9,7 @@ Controller.SpoddyCoiner = {
    * Version
    * incrementing will create fresh cache entries (the old ones will naturally expire)
    */
-  VERSION: "1.0.3",
+  VERSION: "1.0.4",
   
 
   /**

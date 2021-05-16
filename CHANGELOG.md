@@ -8,6 +8,12 @@ Breaking changes between versions will be highligted.
 
 * Ideas a comin'... 
 
+## [1.0.4] - 2021-05-16
+
+* Added: missing supported attributes + descriptions to the docs
+* Fixed: 
+* Notes: 
+* Breaking Changes: none
 
 ## [1.0.3] - 2021-05-16
 
