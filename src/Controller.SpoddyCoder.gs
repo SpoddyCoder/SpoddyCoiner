@@ -56,7 +56,7 @@ Controller.SpoddyCoiner = {
       case 'percent_change_30d': 
         coin_data = Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
         if( ! coin_data.error_message ) {
-          value = coin_data.quote[fiat][attribute];
+          value = coin_data.quote[fiat][attribute] / 100;   // make compatible with standard Google Sheets percentage format
           Logger.log( `${coin} ${attribute} : ${value}` ); 
         }
         break;
