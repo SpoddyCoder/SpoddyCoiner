@@ -3,7 +3,7 @@
 Google Sheets Addon that gets data from the CoinMarketCap API...
 
 * Supports all cryptos / fiats listed on https://coinmarketcap.com/
-    * Covers all your marginal coins/tokens/shitcoins/shillcoins/moonshots/deepddhonies
+    * Covers all your marginal coins/tokens/alts/shitcoins/shillcoins/moonshots/deepDDhonies
 * Works 100% with *FREE* CoinMarketCap API accounts
     * Caches API responses to help reduce the number of calls and keep within your rate-limits
     * Great for free-tier accounts which have the lowest rate-limits
