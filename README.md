@@ -7,6 +7,7 @@ Google Sheets Addon that gets data from the CoinMarketCap API...
 * Works 100% with *FREE* CoinMarketCap API accounts
     * Caches API responses to help reduce the number of calls and keep within your rate-limits
     * Great for free-tier accounts which have the lowest rate-limits
+    * https://coinmarketcap.com/api/pricing/
 * Supports over 25 coin attributes
     * Latest prices and % change over 1h, 24h, 7d & 30d ranges
     * Latest market cap and 24h trading volume
@@ -35,13 +36,13 @@ These work just like any standard function in Google Sheets...
 (all prices/quotes/conversions use CoinMarketCap latest market rates)
 
 
-## Usage
+## Installation + Usage
 
-1. Install the SpoddyCoiner Addon (TODO instructions)
+1. Install the SpoddyCoiner Addon (TODO instructions - pending Addon review)
 3. Get your CoinMarket API Key: https://coinmarketcap.com/api/pricing/
-4. Enter the API Key in the Google Sheets addon menu (Addons -> SpoddyCoiner -> CoinMarketCap API -> Key)
-5. Tap the SpoddyCoiner function into a cell, `=SPODDYCOINER(` and you will see a tooltip with more info
-6. See the Addon menu further help and preferences (Addons -> SpoddyCoiner)
+4. Enter the API Key in the Google Sheets addon menu (Addons -> SpoddyCoiner -> CoinMarketCap API -> API Key)
+5. Tap the SpoddyCoiner function into a cell, you'll get a tooltip with more info: `=SPODDYCOINER(`
+6. See the SpoddyCoiner Addon menu for further help and preferences (Addons -> SpoddyCoiner)
 
 
 ### Examples
