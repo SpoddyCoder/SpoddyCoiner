@@ -1,3 +1,6 @@
+const { Controller } = require( '../controller/SpoddyCoiner' );
+const { Model } = require( '../controller/SpoddyCoiner' );
+
 Model.Cache = {
 
     /**
@@ -97,8 +100,8 @@ Model.Cache = {
     /**
      * Add key to "cache_keys" tracker array
      *
-     * @param {string} key              key name
-     * @return {boolean}                was added, true|false
+     * @param {string} key  key name
+     * @return {boolean}    was added, true|false
      */
     addToCacheKeysTracker: ( key ) => {
         const cacheKeys = Model.Cache.get( Model.Cache.CACHE_KEYS );

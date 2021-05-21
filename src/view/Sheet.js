@@ -1,3 +1,5 @@
+const { View } = require( '../controller/SpoddyCoiner' );
+
 View.Sheet = {
 
     /**

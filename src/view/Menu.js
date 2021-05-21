@@ -1,3 +1,7 @@
+const { Controller } = require( '../controller/SpoddyCoiner' );
+const { Model } = require( '../controller/SpoddyCoiner' );
+const { View } = require( '../controller/SpoddyCoiner' );
+
 View.Menu = {
 
     /**
@@ -58,13 +62,12 @@ View.Menu = {
     addMenu: () => {
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
-            .addSubMenu( ui.createMenu( 'CoinMarketCap API' )
-                .addItem( 'API Key', 'View.Menu.updateCMCApiKey' )
-                .addItem( `Cache Time: ${Model.Props.getCacheTime( human_readable = true )}`, 'View.Menu.updateAPICacheTime' )
-                .addItem( 'Clear Cache', 'View.Menu.clearAPICache' ) )
+            .addItem( 'CoinMarketCap API Key', 'View.Menu.updateCMCApiKey' )
             .addSubMenu( ui.createMenu( 'Preferences' )
                 .addItem( `Default Currency: ${Model.Props.getDefaultCurrency()}`, 'View.Menu.updateDefaultCurrency' )
-                .addItem( `Show Errors: ${Model.Props.getDisplayErrorMessages( human_readable = true )}`, 'View.Menu.showErrors' ) )
+                .addItem( `Cache Time: ${Model.Props.getCacheTime( true )}`, 'View.Menu.updateAPICacheTime' )
+                .addItem( 'Clear Cache', 'View.Menu.clearAPICache' )
+                .addItem( `Show Errors: ${Model.Props.getDisplayErrorMessages( true )}`, 'View.Menu.showErrors' ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( 'Docs' )
                 .addItem( 'Functions', 'View.Menu.docsFunctions' )
@@ -161,7 +164,7 @@ View.Menu = {
         ui.alert(
             `${Controller.SpoddyCoiner.ADDON_NAME} v${Controller.SpoddyCoiner.VERSION}`,
             View.Menu.ABOUT_TEXT,
-            ui.ButtonSet.OK, 
+            ui.ButtonSet.OK,
         );
     },
 

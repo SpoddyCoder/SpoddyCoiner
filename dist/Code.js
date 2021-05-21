@@ -16,7 +16,7 @@ Controller.SpoddyCoiner = {
      * Version
      * incrementing will create fresh cache entries (the old ones will naturally expire)
      */
-    VERSION: '1.2.0.3',
+    VERSION: '1.2.0.12',
 
     /**
      * Start in AuthMode FULL or LIMITED
@@ -135,7 +135,9 @@ Controller.SpoddyCoiner = {
             case 'url_source_code':
                 coinData = Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
-                    value = coinData.urls[attribute.replace( 'url_', '' )][0]; // these can return many url's, just return the first for now (TODO)
+                    const { urls } = coinData;
+                    const { [attribute.replace( 'url_', '' )]: urlWebsite } = urls;
+                    [value] = urlWebsite; // just return the first for now (TODO)
                     Logger.log( `${coin} ${attribute} : ${value}` );
                 }
                 break;
@@ -159,17 +161,19 @@ Controller.SpoddyCoiner = {
      * @return {number}             the converted value
      */
     convert: ( amount, symbol, convert ) => {
-        const conversion_data = Model.CMCApi.priceConversion( amount, symbol, convert );
-        if ( conversion_data.error_message ) {
-            Logger.log( `Error: ${conversion_data.error_message}` );
-            return conversion_data.error_message;
+        const conversionData = Model.CMCApi.priceConversion( amount, symbol, convert );
+        if ( conversionData.error_message ) {
+            Logger.log( `Error: ${conversionData.error_message}` );
+            return conversionData.error_message;
         }
-        value = conversion_data[convert].price;
+        const value = conversionData[convert].price;
         Logger.log( `${amount} ${symbol} : ${value} ${convert}` );
         return value;
     },
 
 };
+
+
 
 Model.Cache = {
 
@@ -270,8 +274,8 @@ Model.Cache = {
     /**
      * Add key to "cache_keys" tracker array
      *
-     * @param {string} key              key name
-     * @return {boolean}                was added, true|false
+     * @param {string} key  key name
+     * @return {boolean}    was added, true|false
      */
     addToCacheKeysTracker: ( key ) => {
         const cacheKeys = Model.Cache.get( Model.Cache.CACHE_KEYS );
@@ -283,6 +287,7 @@ Model.Cache = {
     },
 
 };
+
 
 Model.CMCApi = {
 
@@ -425,6 +430,7 @@ Model.CMCApi = {
 
 };
 
+
 Model.Props = {
 
     /**
@@ -553,7 +559,7 @@ Model.Props = {
         if ( newTime > Model.Cache.MAX_CACHE_TIME ) {
             newTime = Model.Cache.MAX_CACHE_TIME;
         }
-        docProps.setProperty( Model.Props.API_CACHE_TIME, new_time );
+        docProps.setProperty( Model.Props.API_CACHE_TIME, newTime );
         View.Menu.addMenu(); // update the menu with new time
         return true;
     },
@@ -594,18 +600,20 @@ Model.Props = {
 
 };
 
+
+
 Model.RCApi = {
 
     /**
-   * RestCountries API Endpoint
-   */
+     * RestCountries API Endpoint
+     */
     BASE_URL: 'https://restcountries.eu/rest/v2/lang/',
 
     /**
-   * Use the RestCountries API to lookup users preferred currency based on their locale
-   *
-   * @return {string}   ISO-4127 currency code
-   */
+     * Use the RestCountries API to lookup users preferred currency based on their locale
+     *
+     * @return {string}   ISO-4127 currency code
+     */
     lookupCurrency: () => {
         const userCountry = Session.getActiveUserLocale();
         const timeZone = Session.getScriptTimeZone();
@@ -613,16 +621,17 @@ Model.RCApi = {
         const capital = timeZone.split( '/' )[1];
         const response = UrlFetchApp.fetch( Model.RCApi.BASE_URL + userCountry ).getContentText();
         const jsonResponse = JSON.parse( response );
-        const currencyCode = jsonResponse.find( ( country ) => country.capital == capital ).currencies[0].code;
+        const currencyCode = jsonResponse.find( ( country ) => country.capital === capital )
+            .currencies[0].code;
         return currencyCode;
     },
 
     /**
      * Use the RestCountries API to determine if a country code is valid ISO-4217
      *
-     * @param {string} currencyCode        the currency code string to check
+     * @param {string} currencyCode     the currency code string to check
      *
-     * @return {boolean}                    is valid ISO-4217, true|false
+     * @return {boolean}                is valid ISO-4217, true|false
      */
     currencyCodeIsValid: ( currencyCode ) => {
         const userCountry = Session.getActiveUserLocale();
@@ -640,6 +649,7 @@ Model.RCApi = {
     },
 
 };
+
 
 View.Menu = {
 
@@ -701,13 +711,12 @@ View.Menu = {
     addMenu: () => {
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
-            .addSubMenu( ui.createMenu( 'CoinMarketCap API' )
-                .addItem( 'API Key', 'View.Menu.updateCMCApiKey' )
-                .addItem( `Cache Time: ${Model.Props.getCacheTime( human_readable = true )}`, 'View.Menu.updateAPICacheTime' )
-                .addItem( 'Clear Cache', 'View.Menu.clearAPICache' ) )
+            .addItem( 'CoinMarketCap API Key', 'View.Menu.updateCMCApiKey' )
             .addSubMenu( ui.createMenu( 'Preferences' )
                 .addItem( `Default Currency: ${Model.Props.getDefaultCurrency()}`, 'View.Menu.updateDefaultCurrency' )
-                .addItem( `Show Errors: ${Model.Props.getDisplayErrorMessages( human_readable = true )}`, 'View.Menu.showErrors' ) )
+                .addItem( `Cache Time: ${Model.Props.getCacheTime( true )}`, 'View.Menu.updateAPICacheTime' )
+                .addItem( 'Clear Cache', 'View.Menu.clearAPICache' )
+                .addItem( `Show Errors: ${Model.Props.getDisplayErrorMessages( true )}`, 'View.Menu.showErrors' ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( 'Docs' )
                 .addItem( 'Functions', 'View.Menu.docsFunctions' )
@@ -804,7 +813,7 @@ View.Menu = {
         ui.alert(
             `${Controller.SpoddyCoiner.ADDON_NAME} v${Controller.SpoddyCoiner.VERSION}`,
             View.Menu.ABOUT_TEXT,
-            ui.ButtonSet.OK, 
+            ui.ButtonSet.OK,
         );
     },
 
@@ -837,6 +846,7 @@ View.Menu = {
 
 };
 
+
 View.Sheet = {
 
     /**
@@ -867,6 +877,7 @@ View.Sheet = {
     },
 
 };
+
 
 /**
  * @OnlyCurrentDoc
@@ -900,6 +911,7 @@ function onSelectionChange( e ) {
     // stub atm
 }
 
+
 /**
  * Returns coin price and other info from the CoinMarketCap API. Use the Addons -> SpoddyCoiner menu for more info.
  *
@@ -910,10 +922,11 @@ function onSelectionChange( e ) {
  * @customfunction
  */
 function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = Model.Props.getDefaultCurrency() ) {
-    const coinString = ( `${coin}` ) || '';
-    const attributeString = ( `${attribute}` ) || '';
-    const fiatString = ( `${fiat}` ) || '';
-    return Controller.SpoddyCoiner.getCoinAttribute( coinString, attributeString, fiatString );
+    return Controller.SpoddyCoiner.getCoinAttribute(
+        ( coin.toString() ) || '',
+        ( attribute.toString() ) || '',
+        ( fiat.toString() ) || '',
+    );
 }
 
 /**
@@ -926,8 +939,9 @@ function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = Model.Props.get
  * @customfunction
  */
 function SPODDYCOINER_CONVERT( amount, symbol = 'BTC', convert = Model.Props.getDefaultCurrency() ) {
-    const amountNumber = ( parseFloat( amount ) ) || 0;
-    const symbolString = ( `${symbol}` ) || '';
-    const convertString = ( `${convert}` ) || '';
-    return Controller.SpoddyCoiner.convert( amountNumber, symbolString, convertString );
+    return Controller.SpoddyCoiner.convert(
+        ( parseFloat( amount ) ) || 0,
+        ( symbol.toString() ) || '',
+        ( convert.toString() ) || '',
+    );
 }

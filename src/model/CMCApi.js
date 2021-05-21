@@ -1,3 +1,5 @@
+const { Model } = require( '../controller/SpoddyCoiner' );
+
 Model.CMCApi = {
 
     /**

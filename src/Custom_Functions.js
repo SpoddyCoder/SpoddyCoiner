@@ -1,3 +1,8 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-undef */
+/* eslint-disable max-len */
+
 /**
  * Returns coin price and other info from the CoinMarketCap API. Use the Addons -> SpoddyCoiner menu for more info.
  *
@@ -8,10 +13,11 @@
  * @customfunction
  */
 function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = Model.Props.getDefaultCurrency() ) {
-    const coinString = ( `${coin}` ) || '';
-    const attributeString = ( `${attribute}` ) || '';
-    const fiatString = ( `${fiat}` ) || '';
-    return Controller.SpoddyCoiner.getCoinAttribute( coinString, attributeString, fiatString );
+    return Controller.SpoddyCoiner.getCoinAttribute(
+        ( coin.toString() ) || '',
+        ( attribute.toString() ) || '',
+        ( fiat.toString() ) || '',
+    );
 }
 
 /**
@@ -24,8 +30,9 @@ function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = Model.Props.get
  * @customfunction
  */
 function SPODDYCOINER_CONVERT( amount, symbol = 'BTC', convert = Model.Props.getDefaultCurrency() ) {
-    const amountNumber = ( parseFloat( amount ) ) || 0;
-    const symbolString = ( `${symbol}` ) || '';
-    const convertString = ( `${convert}` ) || '';
-    return Controller.SpoddyCoiner.convert( amountNumber, symbolString, convertString );
+    return Controller.SpoddyCoiner.convert(
+        ( parseFloat( amount ) ) || 0,
+        ( symbol.toString() ) || '',
+        ( convert.toString() ) || '',
+    );
 }

@@ -16,7 +16,7 @@ Controller.SpoddyCoiner = {
      * Version
      * incrementing will create fresh cache entries (the old ones will naturally expire)
      */
-    VERSION: '1.2.0.3',
+    VERSION: '1.2.0.12',
 
     /**
      * Start in AuthMode FULL or LIMITED
@@ -135,7 +135,9 @@ Controller.SpoddyCoiner = {
             case 'url_source_code':
                 coinData = Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
-                    value = coinData.urls[attribute.replace( 'url_', '' )][0]; // these can return many url's, just return the first for now (TODO)
+                    const { urls } = coinData;
+                    const { [attribute.replace( 'url_', '' )]: urlWebsite } = urls;
+                    [value] = urlWebsite; // just return the first for now (TODO)
                     Logger.log( `${coin} ${attribute} : ${value}` );
                 }
                 break;
@@ -159,14 +161,16 @@ Controller.SpoddyCoiner = {
      * @return {number}             the converted value
      */
     convert: ( amount, symbol, convert ) => {
-        const conversion_data = Model.CMCApi.priceConversion( amount, symbol, convert );
-        if ( conversion_data.error_message ) {
-            Logger.log( `Error: ${conversion_data.error_message}` );
-            return conversion_data.error_message;
+        const conversionData = Model.CMCApi.priceConversion( amount, symbol, convert );
+        if ( conversionData.error_message ) {
+            Logger.log( `Error: ${conversionData.error_message}` );
+            return conversionData.error_message;
         }
-        value = conversion_data[convert].price;
+        const value = conversionData[convert].price;
         Logger.log( `${amount} ${symbol} : ${value} ${convert}` );
         return value;
     },
 
 };
+
+module.exports = { Controller, Model, View };

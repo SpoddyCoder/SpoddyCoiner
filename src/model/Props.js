@@ -1,3 +1,6 @@
+const { Model } = require( '../controller/SpoddyCoiner' );
+const { View } = require( '../controller/SpoddyCoiner' );
+
 Model.Props = {
 
     /**
@@ -126,7 +129,7 @@ Model.Props = {
         if ( newTime > Model.Cache.MAX_CACHE_TIME ) {
             newTime = Model.Cache.MAX_CACHE_TIME;
         }
-        docProps.setProperty( Model.Props.API_CACHE_TIME, new_time );
+        docProps.setProperty( Model.Props.API_CACHE_TIME, newTime );
         View.Menu.addMenu(); // update the menu with new time
         return true;
     },
