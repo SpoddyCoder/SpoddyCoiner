@@ -3,6 +3,14 @@
 All notable changes to the "SpoddyCoiner Google Sheets Addon" project will be documented in this file. 
 Breaking changes between versions will be highligted.
 
+## [1.2.0] - In Progress
+
+* Added: Clasp deployment
+* Improved: modernised codebase for local IDE development
+    * NPM + Webpack + Eslint (airbnb) + Mocha + Chai
+* Fixed: RestCountries bug breaking install
+* Fixed: Props bug stopping API key error from showing
+
 ## [1.1.0] - 2021-05-16
 
 * Breaking Changes: "percent_change_" attributes are now prefixed with "price_", eg: "price_percent_change_7d"
@@ -17,19 +25,15 @@ Breaking changes between versions will be highligted.
 
 * Breaking Changes: none
 * Added: missing supported attributes + descriptions to the docs
-* Fixed: 
-* Notes: 
 
 ## [1.0.3] - 2021-05-16
 
 * Breaking Changes: none
 * Added: a changelog
 * Fixed: incorrect property key name for display_error_messages
-* Notes: 
 
 ## [1.0.2] - 2021-05-16
 
 * Breaking Changes: none
 * Added: lots
-* Fixed: 
 * Notes: initial release
