@@ -16,6 +16,7 @@ module.exports = {
             files: {
                 'Code.js': [
                     path.resolve( __dirname, 'src/controller/SpoddyCoiner.js' ),
+                    path.resolve( __dirname, 'src/controller/CMC.js' ),
                     path.resolve( __dirname, 'src/model/Cache.js' ),
                     path.resolve( __dirname, 'src/model/CMCApi.js' ),
                     path.resolve( __dirname, 'src/model/Props.js' ),
