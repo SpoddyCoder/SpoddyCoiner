@@ -1,36 +1,21 @@
-/**
- * a loose 'static' MVC pattern
- */
-const Controller = {};
-const Model = {};
-const View = {};
-
-Controller.SpoddyCoiner = {
-
-    /**
-     * SpoddyCoiner Google Sheets Add-On
-     */
-    ADDON_NAME: 'SpoddyCoiner',
-
-    /**
-     * Version
-     * incrementing will create fresh cache entries (the old ones will naturally expire)
-     */
-    VERSION: '1.2.0.16',
+class SpoddyCoiner {
+    constructor( menu ) {
+        this.Menu = menu;
+    }
 
     /**
      * Start in AuthMode FULL or LIMITED
      */
-    start: () => {
-        View.Menu.addMenu();
-    },
+    start() {
+        this.Menu.addMenu();
+    }
 
     /**
      * Start in AuthMode NONE
      */
-    startNoAuth: () => {
-        View.Menu.addNoAuthMenu(); // renders the 'About' section only
-    },
+    startNoAuth() {
+        this.Menu.addNoAuthMenu(); // renders the 'About' section only
+    }
 
     /**
      * @param {string} coin         the coin ticker
@@ -38,11 +23,9 @@ Controller.SpoddyCoiner = {
      * @param {string} [fiat]       fiat to return the value in (required for some attributes)
      * @return {string|number}      the value of the attribute
      */
-    getCoinAttribute: ( coin, attribute, fiat ) => Controller.CMC.getCoinAttribute(
-        coin,
-        attribute,
-        fiat,
-    ),
+    getCoinAttribute( coin, attribute, fiat ) {
+        return this.CMC.getCoinAttribute( coin, attribute, fiat );
+    }
 
     /**
      * @param {number} amount       the amount to convert
@@ -50,11 +33,9 @@ Controller.SpoddyCoiner = {
      * @param {string} convert      the coin/currnecy ticker to convert to
      * @return {number}             the converted value
      */
-    convert: ( amount, symbol, convert ) => Controller.CMC.convert(
-        amount,
-        symbol,
-        convert,
-    ),
-};
+    convert( amount, symbol, convert ) {
+        return this.CMC.convert( amount, symbol, convert );
+    }
+}
 
-module.exports = { Controller, Model, View };
+module.exports = { SpoddyCoiner };

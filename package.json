@@ -11,7 +11,7 @@
     "deploy": "clasp push",
     "__custom_build__": "a little gentle sed because exports & require statements cannot work in the deployed AppsScript environment",
     "__custom_build_frustration__": "...and yes i tried a webpack loader plugin to sort this",
-    "build": "webpack && sed -i '/^module\\.exports/d; /^exports\\./d; / = require(/d; /eslint-disable/d;' dist/Code.js && rm -f ./dist/main",
+    "build": "webpack && sed -i '/^module\\.exports/d; /^exports\\./d; /require(/d; /eslint-disable/d;' dist/Code.js && rm -f ./dist/main",
     "test": "mocha"
   },
   "repository": {
