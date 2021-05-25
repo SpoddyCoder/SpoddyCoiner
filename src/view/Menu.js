@@ -1,9 +1,8 @@
-/**
- * Menu display + interactions
- */
 class Menu {
     /**
-     * SpoddyCoiner Addon Menu
+     * SpoddyCoiner Addon Menu view
+     *
+     * @param {SpoddyCoiner} spoddycoiner   primary controller instance
      */
     constructor( spoddycoiner ) {
         /**

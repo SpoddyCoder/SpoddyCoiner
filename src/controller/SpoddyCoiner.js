@@ -5,12 +5,9 @@ const CMCApi = require( '../model/CMCApi' );
 const Menu = require( '../view/Menu' );
 const Sheet = require( '../view/Sheet' );
 
-/**
- * Primary controller
- */
 class SpoddyCoiner {
     /**
-     * SpoddyCoiner Addon
+     * SpoddyCoiner Addon primary controller
      *
      * @param {string} instanceName     the variable name of the SpoddyCoiner instance
      */
@@ -25,7 +22,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.70';
+        this.VERSION = '1.2.0.71';
 
         /**
          * a loose MVC pattern

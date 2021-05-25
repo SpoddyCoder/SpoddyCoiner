@@ -1,40 +1,40 @@
 {
-  "name": "spoddycoiner",
-  "version": "1.2.0",
-  "description": "Google Sheets Addon that gets data from the CoinMarketCap API",
-  "main": "src/controller/SpoddyCoiner.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "publish": "npm run test && npm run build && npm run deploy",
-    "deploy": "clasp push",
-    "__custom_build__": "a little gentle sed because exports & require statements cannot work in the deployed AppsScript environment",
-    "__custom_build_frustration__": "...and yes i tried a webpack loader plugin to sort this",
-    "build": "rm -f Code.js Tests.js && webpack --config webpack.prod.js && sed -i '/^module\\.exports/d; /^exports\\./d; /require(/d; /eslint-disable/d;' dist/Code.js && rm -f ./dist/main",
-    "test": "mocha"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SpoddyCoder/SpoddyCoiner.git"
-  },
-  "author": "SpoddyCoder",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/SpoddyCoder/SpoddyCoiner/issues"
-  },
-  "homepage": "https://github.com/SpoddyCoder/SpoddyCoiner#readme",
-  "devDependencies": {
-    "@babel/runtime": "^7.14.0",
-    "eslint": "^7.26.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-googleappsscript": "^1.0.3",
-    "eslint-plugin-import": "^2.23.2",
-    "webpack": "^5.37.1",
-    "webpack-cli": "^4.7.0"
-  },
-  "dependencies": {
-    "webpack-merge": "^5.7.3",
-    "webpack-merge-and-include-globally": "^2.3.4"
-  }
+    "name": "spoddycoiner",
+    "version": "1.2.0",
+    "description": "Google Sheets Addon that gets data from the CoinMarketCap API",
+    "main": "src/controller/SpoddyCoiner.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "publish": "npm run test && webpack --config webpack.prod.js && npm run postbuild && npm run deploy",
+        "deploy": "clasp push",
+        "build": "webpack --config webpack.dev.js && npm run postbuild",
+        "__custom_build__": "a little gentle sed because exports & require statements cannot work in the deployed AppsScript environment...and yes i tried a webpack loader plugin to sort this but failed",
+        "postbuild": "sed -i '/^module\\.exports/d; /^exports\\./d; /require(/d; /eslint-disable/d;' dist/Code.js && rm -f ./dist/main && cp ./gas/appsscript.json ./dist/",
+        "test": "mocha"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SpoddyCoder/SpoddyCoiner.git"
+    },
+    "author": "SpoddyCoder",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/SpoddyCoder/SpoddyCoiner/issues"
+    },
+    "homepage": "https://github.com/SpoddyCoder/SpoddyCoiner#readme",
+    "devDependencies": {
+        "@babel/runtime": "^7.14.0",
+        "eslint": "^7.26.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-googleappsscript": "^1.0.3",
+        "eslint-plugin-import": "^2.23.2",
+        "webpack": "^5.37.1",
+        "webpack-cli": "^4.7.0"
+    },
+    "dependencies": {
+        "webpack-merge": "^5.7.3",
+        "webpack-merge-and-include-globally": "^2.3.4"
+    }
 }

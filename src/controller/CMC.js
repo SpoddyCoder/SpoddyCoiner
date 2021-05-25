@@ -1,4 +1,9 @@
 class CMC {
+    /**
+     * CoinMarketCap query controller
+     *
+     * @param {SpoddyCoiner} spoddycoiner  primary controller instance
+     */
     constructor( spoddycoiner ) {
         /**
          * main controller class

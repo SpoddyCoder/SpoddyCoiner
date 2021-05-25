@@ -1,7 +1,9 @@
-/**
- * Spreadsheet display + interactions
- */
 class Sheet {
+    /**
+     * Active Sheet view
+     *
+     * @param {SpoddyCoiner} spoddycoiner   primary controller instance
+     */
     constructor( spoddycoiner ) {
         /**
          * main controller class

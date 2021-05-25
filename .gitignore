@@ -1,5 +1,12 @@
-node_modules/*
-dist/appsscript.json
-dist/Tests.js
+# track only the build
+dist/*
+!dist/Code.js
+
+# push to your own script
 .clasp.json
+
+# heavier than the sun
+node_modules/*
+
+# dev messin'
 scratch.js

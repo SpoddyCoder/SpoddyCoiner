@@ -1,4 +1,9 @@
 class CMCApi {
+    /**
+     * CoinMarketAPI model
+     *
+     * @param {SpoddyCoiner} spoddycoiner   primary controller instance
+     */
     constructor( spoddycoiner ) {
         /**
          * main controller class

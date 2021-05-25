@@ -1,6 +1,8 @@
 class GASProps {
     /**
-     * GAS Properties Service
+     * GAS Properties Service model
+     *
+     * @param {SpoddyCoiner} SpoddyCoiner   primary controller instance
      */
     constructor( spoddycoiner ) {
         /**

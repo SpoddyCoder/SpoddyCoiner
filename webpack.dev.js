@@ -8,8 +8,8 @@ module.exports = merge( common, {
     plugins: [
         new MergeIntoSingleFilePlugin( {
             files: {
-                'Tests.js': [
-                    path.resolve( __dirname, 'test/GAS_Test_Functions.js' ),
+                'Dev.js': [
+                    path.resolve( __dirname, 'gas/Dev_Functions.js' ),
                 ],
             },
         } ),

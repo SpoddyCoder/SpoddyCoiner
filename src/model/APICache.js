@@ -1,6 +1,8 @@
 class APICache {
     /**
-     * API Cache
+     * API Cache model
+     *
+     * @param {SpoddyCoiner} spoddycoiner   primary controller instance
      */
     constructor( spoddycoiner ) {
         /**

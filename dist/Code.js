@@ -19,7 +19,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.1';
+        this.VERSION = '1.2.0.70';
 
         /**
          * a loose MVC pattern
