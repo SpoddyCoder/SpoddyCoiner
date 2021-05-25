@@ -2,12 +2,11 @@ class APICache {
     /**
      * API Cache
      */
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * Cache time in seconds
@@ -41,7 +40,11 @@ class APICache {
         if ( key !== this.CACHE_KEYS ) {
             this.addToCacheKeysTracker( prefixedKey );
         }
-        return this.userCache.put( prefixedKey, returnObj, this.Model.GASProps.getCacheTime() );
+        return this.userCache.put(
+            prefixedKey,
+            returnObj,
+            this.SpoddyCoiner.Model.GASProps.getCacheTime(),
+        );
     }
 
     /**
@@ -54,10 +57,17 @@ class APICache {
         const prefixedKey = this.prefixKey( key );
         const obj = this.userCache.get( prefixedKey );
         let returnObj = obj;
-        try {
-            returnObj = JSON.parse( obj );
-        } catch ( e ) {
-            return returnObj; // string
+        if ( obj !== null ) {
+            // object in the cache
+            if ( key !== this.CACHE_KEYS ) {
+                // add it to cache_keys if not already (possible for these to become disconnected)
+                this.addToCacheKeysTracker( prefixedKey );
+            }
+            try {
+                returnObj = JSON.parse( obj );
+            } catch ( e ) {
+                return returnObj; // string
+            }
         }
         // init the cache_keys tracker when it's needed (can expire outside the scope of the script)
         if ( key === this.CACHE_KEYS && obj === null ) {
@@ -65,6 +75,19 @@ class APICache {
             return [];
         }
         return returnObj; // object or null
+    }
+
+    /**
+     * Prefix all cache keys with VERSION to facilitate invalidation
+     *
+     * @param {string} key  the base key name to apply prefix
+     * @return {string}     the prefixed key name
+     */
+    prefixKey( key ) {
+        if ( key.includes( `${this.SpoddyCoiner.VERSION}_` ) ) {
+            return key;
+        }
+        return `${this.SpoddyCoiner.VERSION}_${key}`;
     }
 
     /**
@@ -92,19 +115,6 @@ class APICache {
     }
 
     /**
-     * Prefix all cache keys with VERSION to facilitate invalidation
-     *
-     * @param {string} key  the base key name to apply prefix
-     * @return {string}     the prefixed key name
-     */
-    prefixKey( key ) {
-        if ( key.includes( `${this.Controller.VERSION}_` ) ) {
-            return key;
-        }
-        return `${this.Controller.VERSION}_${key}`;
-    }
-
-    /**
      * Add key to "cache_keys" tracker array
      *
      * @param {string} key  key name
@@ -117,6 +127,10 @@ class APICache {
             return this.put( this.CACHE_KEYS, cacheKeys );
         }
         return false;
+    }
+
+    logCacheKeys() {
+        Logger.log( this.get( this.CACHE_KEYS ) );
     }
 }
 

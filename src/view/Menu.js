@@ -5,18 +5,17 @@ class Menu {
     /**
      * SpoddyCoiner Addon Menu
      */
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * SpoddyCoiner var name in the gloabl scope
          * needed for addMenuItem functionName's
          */
-        this.app = this.Controller.instanceName;
+        this.app = this.SpoddyCoiner.instanceName;
 
         /**
          * Menu item labels
@@ -35,7 +34,7 @@ class Menu {
         /**
          * Dialogue headings / texts / labels
          */
-        this.ABOUT_HEADING = `${this.Controller.ADDON_NAME} v${this.Controller.VERSION}`;
+        this.ABOUT_HEADING = `${this.SpoddyCoiner.ADDON_NAME} v${this.SpoddyCoiner.VERSION}`;
         this.ABOUT_TEXT = 'Handy little functions to get data from the CoinMarketCap API.\n\nCaches the response to help reduce the number of API calls and keep within your rate-limits.\n\nhttps://github.com/SpoddyCoder/SpoddyCoiner';
         this.DOCS_FUNCTIONS_HEADING = 'Custom Functions';
         this.DOCS_FUNCTIONS_TEXT = 'Simply tap the function name into a cell to get more information.\n\n=SPODDYCOINER( coin, attribute, fiat )\n\n=SPODDYCOINER_CONVERT( coin, amount, coin )\nNB: currency ticker can be used instead of coin\n';
@@ -45,7 +44,7 @@ class Menu {
         this.CURRENT_KEY_LABEL = 'Current Key :';
         this.API_KEY_UPDATED_LABEL = 'API Key Updated';
         this.API_CACHE_TIME_HEADING = 'API Cache Time';
-        this.API_CACHE_KEY_PROMPT = `New cache time in seconds (max ${this.Model.APICache.MAX_CACHE_TIME})`;
+        this.API_CACHE_KEY_PROMPT = `New cache time in seconds (max ${this.SpoddyCoiner.Model.APICache.MAX_CACHE_TIME})`;
         this.API_CACHE_TIME_UPDATED_LABEL = 'API Cache Time Updated';
         this.NEW_CACHE_TIME_LABEL = 'New cache time :';
         this.NUM_CACHE_ITEMS_LABEL = ' API calls currently cached';
@@ -110,10 +109,10 @@ class Menu {
         ui.createAddonMenu()
             .addItem( this.MENU_CMC_API_KEY_LABEL, `${this.app}.View.Menu.updateCMCApiKey` )
             .addSubMenu( ui.createMenu( this.MENU_PREFERENCES_LABEL )
-                .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
-                .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
+                .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
+                .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
                 .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
-                .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
+                .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
                 .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
@@ -127,7 +126,7 @@ class Menu {
      */
     updateCMCApiKey() {
         const ui = SpreadsheetApp.getUi();
-        let apiKey = this.Model.GASProps.getAPIKey( true ); // masked
+        let apiKey = this.SpoddyCoiner.Model.GASProps.getAPIKey( true ); // masked
         const promptLabel = ( apiKey === '' ) ? this.ENTER_API_KEY_PROMPT : `${this.CURRENT_KEY_LABEL} ${apiKey}\n\n${this.ENTER_API_KEY_PROMPT}`;
         const result = ui.prompt(
             this.MENU_CMC_API_KEY_LABEL,
@@ -137,7 +136,7 @@ class Menu {
         const button = result.getSelectedButton();
         apiKey = result.getResponseText();
         if ( button === ui.Button.OK ) {
-            if ( !this.Model.GASProps.setAPIKey( apiKey ) ) {
+            if ( !this.SpoddyCoiner.Model.GASProps.setAPIKey( apiKey ) ) {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
@@ -158,13 +157,13 @@ class Menu {
         const button = result.getSelectedButton();
         const newTime = result.getResponseText();
         if ( button === ui.Button.OK ) {
-            if ( !this.Model.GASProps.setCacheTime( newTime ) ) {
+            if ( !this.SpoddyCoiner.Model.GASProps.setCacheTime( newTime ) ) {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
             ui.alert(
                 this.API_CACHE_TIME_UPDATED_LABEL,
-                `${this.NEW_CACHE_TIME_LABEL} ${this.Model.GASProps.getCacheTime( true )}`,
+                `${this.NEW_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`,
                 ui.ButtonSet.OK,
             );
         }
@@ -176,11 +175,12 @@ class Menu {
     clearAPICache() {
         const ui = SpreadsheetApp.getUi();
         let result = ui.alert(
-            `${this.Model.APICache.getNumItems()}${this.NUM_CACHE_ITEMS_LABEL}\n\n${this.CLEAR_CACHE_PROMPT}`,
+            this.MENU_CLEAR_CACHE_LABEL,
+            `${this.SpoddyCoiner.Model.APICache.getNumItems()}${this.NUM_CACHE_ITEMS_LABEL}\n\n${this.CLEAR_CACHE_PROMPT}`,
             ui.ButtonSet.YES_NO,
         );
         if ( result === ui.Button.YES ) {
-            if ( !this.Model.APICache.clear() ) {
+            if ( !this.SpoddyCoiner.Model.APICache.clear() ) {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
@@ -189,7 +189,7 @@ class Menu {
                 ui.ButtonSet.YES_NO,
             );
             if ( result === ui.Button.YES ) {
-                this.Controller.handleRefreshAllFunctionsConfirm();
+                this.SpoddyCoiner.handleRefreshAllFunctionsConfirm();
             }
         }
     }
@@ -200,7 +200,7 @@ class Menu {
     updateDefaultCurrency() {
         const ui = SpreadsheetApp.getUi();
         const result = ui.prompt(
-            `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`,
+            `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`,
             this.NEW_CURRENCY_CODE_HEADING,
             ui.ButtonSet.OK_CANCEL,
         );
@@ -210,13 +210,13 @@ class Menu {
             return;
         }
         if ( button === ui.Button.OK ) {
-            if ( !this.Model.GASProps.setDefaultCurrency( newCurrencyCode ) ) {
+            if ( !this.SpoddyCoiner.Model.GASProps.setDefaultCurrency( newCurrencyCode ) ) {
                 ui.alert( this.CURRENCY_CODE_NOT_VALID_LABEL, ui.ButtonSet.OK );
                 return;
             }
             ui.alert(
                 this.DEFAULT_CURRENCY_UPDATED_LABEL,
-                `${this.NEW_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`,
+                `${this.NEW_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`,
                 ui.ButtonSet.OK,
             );
         }
@@ -228,12 +228,16 @@ class Menu {
     showErrors() {
         const ui = SpreadsheetApp.getUi();
         let prompt = this.TURN_ERRORS_ON_PROMPT;
-        if ( this.Model.GASProps.getDisplayErrorMessages() ) {
+        if ( this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages() ) {
             prompt = this.TURN_ERRORS_OFF_PROMPT;
         }
-        const result = ui.alert( prompt, ui.ButtonSet.YES_NO );
+        const result = ui.alert(
+            `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`,
+            prompt,
+            ui.ButtonSet.YES_NO,
+        );
         if ( result === ui.Button.YES ) {
-            this.Model.GASProps.toggleErrorMessages();
+            this.SpoddyCoiner.Model.GASProps.toggleErrorMessages();
         }
     }
 

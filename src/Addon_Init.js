@@ -3,7 +3,7 @@
 /* eslint-disable no-undef */
 
 /**
- * SpoddyCoiner controller class
+ * SpoddyCoiner global scope reference
  */
 const SpoddyCoiner = require( './controller/SpoddyCoiner' );
 
@@ -21,10 +21,12 @@ function onInstall( e ) {
  */
 function onOpen( e ) {
     if ( e && e.authMode === ScriptApp.AuthMode.NONE ) {
-        App.startNoAuth();
+        // Start in AuthMode NONE - addon menu contains the 'About' section only
+        App.View.Menu.addNoAuthMenu();
         return;
     }
-    App.start();
+    // Start in AuthMode FULL or LIMITED - full menu
+    App.View.Menu.addMenu();
 }
 
 /**

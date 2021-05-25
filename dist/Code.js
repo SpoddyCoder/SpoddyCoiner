@@ -1,4 +1,7 @@
 
+/**
+ * Primary controller
+ */
 class SpoddyCoiner {
     /**
      * SpoddyCoiner Addon
@@ -16,7 +19,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.69';
+        this.VERSION = '1.2.1';
 
         /**
          * a loose MVC pattern
@@ -27,48 +30,12 @@ class SpoddyCoiner {
 
         this.Controller.CMC = new CMC( this );
 
+        this.Model.GASProps = new GASProps( this );
         this.Model.APICache = new APICache( this );
         this.Model.CMCApi = new CMCApi( this );
-        this.Model.RCApi = new RCApi();
-        this.Model.GASProps = new GASProps( this );
 
         this.View.Menu = new Menu( this );
-        this.View.Sheet = new Sheet();
-    }
-
-    /**
-     * Start in AuthMode FULL or LIMITED
-     */
-    start() {
-        this.View.Menu.addMenu();
-    }
-
-    /**
-     * Start in AuthMode NONE
-     * Addon menu contains the 'About' section only
-     */
-    startNoAuth() {
-        this.View.Menu.addNoAuthMenu();
-    }
-
-    /**
-     * @param {string} coin         the coin ticker
-     * @param {string} attribute    the attribute to get
-     * @param {string} [fiat]       fiat to return the value in (required for some attributes)
-     * @return {string|number}      the value of the attribute
-     */
-    getCoinAttribute( coin, attribute, fiat ) {
-        return this.Controller.CMC.getCoinAttribute( coin, attribute, fiat );
-    }
-
-    /**
-     * @param {number} amount       the amount to convert
-     * @param {string} symbol       the coin/currency ticker to convert from
-     * @param {string} convert      the coin/currnecy ticker to convert to
-     * @return {number}             the converted value
-     */
-    convert( amount, symbol, convert ) {
-        return this.Controller.CMC.convert( amount, symbol, convert );
+        this.View.Sheet = new Sheet( this );
     }
 
     /**
@@ -104,12 +71,11 @@ class SpoddyCoiner {
 
 
 class CMC {
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
     }
 
     /**
@@ -126,7 +92,7 @@ class CMC {
             case 'price':
             case 'market_cap':
             case 'volume_24h':
-                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
                 if ( !coinData.error_message ) {
                     value = coinData.quote[fiat][attribute];
                     Logger.log( `${coin} ${attribute} : ${value} ${fiat}` );
@@ -137,7 +103,7 @@ class CMC {
             case 'price_percent_change_24h':
             case 'price_percent_change_7d':
             case 'price_percent_change_30d':
-                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
                 if ( !coinData.error_message ) {
                     value = coinData.quote[fiat][attribute.replace( 'price_', '' )] / 100; // make compatible with standard Google Sheets percentage format
                     Logger.log( `${coin} ${attribute} : ${value}` );
@@ -147,7 +113,7 @@ class CMC {
             case 'circulating_supply':
             case 'total_supply':
             case 'max_supply':
-                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
                 if ( !coinData.error_message ) {
                     value = coinData[attribute];
                     Logger.log( `${coin} ${attribute} : ${value}` );
@@ -156,9 +122,9 @@ class CMC {
 
             case 'fcas_grade':
             case 'fcas_grade_full':
-                coinData = this.Model.CMCApi.getFCASQuoteLatest( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getFCASQuoteLatest( coin );
                 if ( !coinData.error_message ) {
-                    value = ( attribute === 'fcas_grade' ) ? coinData.grade : this.Model.CMCApi.FCAS_GRADES[coinData.grade];
+                    value = ( attribute === 'fcas_grade' ) ? coinData.grade : this.SpoddyCoiner.Model.CMCApi.FCAS_GRADES[coinData.grade];
                     Logger.log( `${coin} ${attribute} : ${value}` );
                 }
                 break;
@@ -166,7 +132,7 @@ class CMC {
             case 'fcas_score':
             case 'fcas_percent_change_24h':
             case 'fcas_point_change_24h':
-                coinData = this.Model.CMCApi.getFCASQuoteLatest( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getFCASQuoteLatest( coin );
                 if ( !coinData.error_message ) {
                     value = coinData[attribute.replace( 'fcas_', '' )];
                     if ( coinData.score === '' ) {
@@ -181,7 +147,7 @@ class CMC {
             case 'name':
             case 'description':
             case 'logo':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     value = coinData[attribute];
                     Logger.log( `${coin} ${attribute} : ${value}` );
@@ -190,7 +156,7 @@ class CMC {
 
             case 'date_added':
             case 'year_added':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     value = new Date( coinData.date_added ); // convert to GS native date format
                     value = ( attribute === 'year_added' ) ? value.getFullYear() : value;
@@ -200,7 +166,7 @@ class CMC {
 
             case 'tags':
             case 'tags_top_5':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     let { tags } = coinData;
                     tags = ( attribute === 'tags_top_5' ) ? tags.slice( 0, 5 ) : tags;
@@ -213,7 +179,7 @@ class CMC {
             case 'url_technical_doc':
             case 'url_explorer':
             case 'url_source_code':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     const { urls } = coinData;
                     const { [attribute.replace( 'url_', '' )]: urlWebsite } = urls;
@@ -229,7 +195,7 @@ class CMC {
 
         if ( coinData.error_message ) {
             Logger.log( `Error: ${coinData.error_message}` );
-            return ( this.Model.GASProps.getDisplayErrorMessages() ) ? coinData.error_message : '';
+            return ( this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages() ) ? coinData.error_message : '';
         }
         return value;
     }
@@ -241,7 +207,11 @@ class CMC {
      * @return {number}             the converted value
      */
     convert( amount, symbol, convert ) {
-        const conversionData = this.Model.CMCApi.priceConversion( amount, symbol, convert );
+        const conversionData = this.SpoddyCoiner.Model.CMCApi.priceConversion(
+            amount,
+            symbol,
+            convert,
+        );
         if ( conversionData.error_message ) {
             Logger.log( `Error: ${conversionData.error_message}` );
             return conversionData.error_message;
@@ -250,6 +220,29 @@ class CMC {
         Logger.log( `${amount} ${symbol} : ${value} ${convert}` );
         return value;
     }
+
+    /**
+     * Determine if a curency code is valid
+     * @param {string} currencyCode     the currency code to check
+     * @return {boolean}                is valid ISO-4217 country code
+     */
+    currencyCodeIsValid( currencyCode ) {
+        const currencyCodeToCheck = currencyCode.toString() || '';
+        if ( currencyCodeToCheck === '' ) {
+            return false;
+        }
+        const fiatMap = this.SpoddyCoiner.Model.CMCApi.getFiatMap();
+        if ( fiatMap.error_message !== '' ) {
+            return false;
+        }
+        let isValid = false;
+        Object.values( fiatMap.data ).forEach( ( fiatObject ) => {
+            if ( fiatObject.symbol === currencyCodeToCheck ) {
+                isValid = true;
+            }
+        } );
+        return isValid;
+    }
 }
 
 
@@ -257,12 +250,11 @@ class GASProps {
     /**
      * GAS Properties Service
      */
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * Default values
@@ -316,7 +308,7 @@ class GASProps {
         if ( !this.userProps.setProperty( this.CMC_API_KEY_KEY, newApiKey ) ) {
             return false;
         }
-        this.Controller.handleApiKeyChange( newApiKey );
+        this.SpoddyCoiner.handleApiKeyChange( newApiKey );
         return true;
     }
 
@@ -329,7 +321,7 @@ class GASProps {
     getDefaultCurrency() {
         let currency = this.userProps.getProperty( this.DEFAULT_CURRENCY_KEY );
         if ( !currency ) {
-            currency = this.DEFAULT_DEFAULT_CURRENCY; // TODO: re-implement RCApi?
+            currency = this.DEFAULT_DEFAULT_CURRENCY;
             this.userProps.setProperty( this.DEFAULT_CURRENCY_KEY, currency );
         }
         return currency;
@@ -344,13 +336,13 @@ class GASProps {
         if ( typeof ( newCurrencyCode ) !== 'string' ) {
             return false;
         }
-        if ( !this.Model.RCApi.currencyCodeIsValid( newCurrencyCode ) ) {
+        if ( !this.SpoddyCoiner.Controller.CMC.currencyCodeIsValid( newCurrencyCode ) ) {
             return false;
         }
         if ( !this.userProps.setProperty( 'default_currency', newCurrencyCode ) ) {
             return false;
         }
-        this.Controller.handleDefaultCurrencyChange( newCurrencyCode );
+        this.SpoddyCoiner.handleDefaultCurrencyChange( newCurrencyCode );
         return true;
     }
 
@@ -396,13 +388,13 @@ class GASProps {
         if ( newTime.isNaN ) {
             return false;
         }
-        if ( newTime > this.Model.APICache.MAX_CACHE_TIME ) {
-            newTime = this.Model.APICache.MAX_CACHE_TIME;
+        if ( newTime > this.SpoddyCoiner.Model.APICache.MAX_CACHE_TIME ) {
+            newTime = this.SpoddyCoiner.Model.APICache.MAX_CACHE_TIME;
         }
         if ( !this.docProps.setProperty( this.API_CACHE_TIME_KEY, newTime ) ) {
             return false;
         }
-        this.Controller.handleCacheTimeChange( newTime );
+        this.SpoddyCoiner.handleCacheTimeChange( newTime );
         return true;
     }
 
@@ -437,7 +429,7 @@ class GASProps {
         if ( !this.docProps.setProperty( this.DISPLAY_ERROR_MESSAGES_KEY, dispErrMsgs ) ) {
             return false;
         }
-        this.Controller.handleDisplayErrorMessagesChange( dispErrMsgs );
+        this.SpoddyCoiner.handleDisplayErrorMessagesChange( dispErrMsgs );
         return true;
     }
 }
@@ -447,12 +439,11 @@ class APICache {
     /**
      * API Cache
      */
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * Cache time in seconds
@@ -486,7 +477,11 @@ class APICache {
         if ( key !== this.CACHE_KEYS ) {
             this.addToCacheKeysTracker( prefixedKey );
         }
-        return this.userCache.put( prefixedKey, returnObj, this.Model.GASProps.getCacheTime() );
+        return this.userCache.put(
+            prefixedKey,
+            returnObj,
+            this.SpoddyCoiner.Model.GASProps.getCacheTime(),
+        );
     }
 
     /**
@@ -499,10 +494,17 @@ class APICache {
         const prefixedKey = this.prefixKey( key );
         const obj = this.userCache.get( prefixedKey );
         let returnObj = obj;
-        try {
-            returnObj = JSON.parse( obj );
-        } catch ( e ) {
-            return returnObj; // string
+        if ( obj !== null ) {
+            // object in the cache
+            if ( key !== this.CACHE_KEYS ) {
+                // add it to cache_keys if not already (possible for these to become disconnected)
+                this.addToCacheKeysTracker( prefixedKey );
+            }
+            try {
+                returnObj = JSON.parse( obj );
+            } catch ( e ) {
+                return returnObj; // string
+            }
         }
         // init the cache_keys tracker when it's needed (can expire outside the scope of the script)
         if ( key === this.CACHE_KEYS && obj === null ) {
@@ -510,6 +512,19 @@ class APICache {
             return [];
         }
         return returnObj; // object or null
+    }
+
+    /**
+     * Prefix all cache keys with VERSION to facilitate invalidation
+     *
+     * @param {string} key  the base key name to apply prefix
+     * @return {string}     the prefixed key name
+     */
+    prefixKey( key ) {
+        if ( key.includes( `${this.SpoddyCoiner.VERSION}_` ) ) {
+            return key;
+        }
+        return `${this.SpoddyCoiner.VERSION}_${key}`;
     }
 
     /**
@@ -537,19 +552,6 @@ class APICache {
     }
 
     /**
-     * Prefix all cache keys with VERSION to facilitate invalidation
-     *
-     * @param {string} key  the base key name to apply prefix
-     * @return {string}     the prefixed key name
-     */
-    prefixKey( key ) {
-        if ( key.includes( `${this.Controller.VERSION}_` ) ) {
-            return key;
-        }
-        return `${this.Controller.VERSION}_${key}`;
-    }
-
-    /**
      * Add key to "cache_keys" tracker array
      *
      * @param {string} key  key name
@@ -563,16 +565,19 @@ class APICache {
         }
         return false;
     }
+
+    logCacheKeys() {
+        Logger.log( this.get( this.CACHE_KEYS ) );
+    }
 }
 
 
 class CMCApi {
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * CMC API Endpoints
@@ -656,6 +661,16 @@ class CMCApi {
     }
 
     /**
+     * Make an API call to FIAT_MAP
+     *
+     * @return {Object}         JSON Object
+     */
+    getFiatMap() {
+        const query = 'start=1&limit=1000'; // all listed fiats
+        return this.call( this.FIAT_MAP, query );
+    }
+
+    /**
      * Make an API call to the CMC API (only if necessary, will fetch from cache if available)
      * handle errors, cahe + return the result
      *
@@ -667,11 +682,11 @@ class CMCApi {
         const fullQuery = `${endpoint}?${query}`;
         Logger.log( `Running query: ${fullQuery}` );
 
-        let data = this.Model.APICache.get( fullQuery );
-        if ( data ) {
+        const cacheData = this.SpoddyCoiner.Model.APICache.get( fullQuery );
+        if ( cacheData ) {
             Logger.log( 'Result fetched from cache' );
-            Logger.log( data );
-            return data;
+            Logger.log( cacheData );
+            return cacheData;
         }
 
         Logger.log( 'Not found in cache, fetching result from API...' );
@@ -681,7 +696,7 @@ class CMCApi {
                 contentType: 'application/json',
                 muteHttpExceptions: true,
                 headers: {
-                    'X-CMC_PRO_API_KEY': this.Model.GASProps.getAPIKey(),
+                    'X-CMC_PRO_API_KEY': this.SpoddyCoiner.Model.GASProps.getAPIKey(),
                     Accept: 'application/json',
                 },
             },
@@ -701,65 +716,25 @@ class CMCApi {
             return responseJson; // dont cache error reponses
         }
 
-        // get first item in the packet (all our calls currently return 1 coin/item)
-        // discard the status object
-        // cache & return
-        data = responseJson.data;
-        const returnData = Object.values( data )[0];
-        returnData.error_message = ''; // no error
-        this.Model.APICache.put( fullQuery, returnData );
+        let returnData = {};
+        switch ( endpoint ) {
+            case this.FIAT_MAP:
+                returnData.data = responseJson.data;
+                returnData.error_message = ''; // no error
+                // NB: we dont cache this call, infrequent and would use a lot of the cache space
+                break;
+            default:
+                // all other API calls...
+                // get first item (all our outer methods are meant to return 1 coin/item atm)
+                // discard the status object
+                // cache & return
+                [returnData] = Object.values( responseJson.data ); // 1st element
+                returnData.error_message = ''; // no error
+                this.SpoddyCoiner.Model.APICache.put( fullQuery, returnData );
+                break;
+        }
         Logger.log( returnData );
         return returnData;
-    }
-}
-
-
-
-class RCApi {
-    constructor() {
-        /**
-         * RestCountries API Endpoint
-         */
-        this.BASE_URL = 'https://restcountries.eu/rest/v2/lang/';
-    }
-
-    /**
-     * Use the RestCountries API to lookup users preferred currency based on their locale
-     *
-     * @return {string}   ISO-4127 currency code
-     */
-    lookupCurrency() {
-        const userCountry = Session.getActiveUserLocale();
-        const timeZone = Session.getScriptTimeZone();
-        // const region = timeZone.split( '/' )[0];
-        const capital = timeZone.split( '/' )[1];
-        const response = UrlFetchApp.fetch( this.BASE_URL + userCountry ).getContentText();
-        const jsonResponse = JSON.parse( response );
-        const currencyCode = jsonResponse.find( ( country ) => country.capital === capital )
-            .currencies[0].code;
-        return currencyCode;
-    }
-
-    /**
-     * Use the RestCountries API to determine if a country code is valid ISO-4217
-     *
-     * @param {string} currencyCode     the currency code string to check
-     *
-     * @return {boolean}                is valid ISO-4217, true|false
-     */
-    currencyCodeIsValid( currencyCode ) {
-        const userCountry = Session.getActiveUserLocale();
-        const response = UrlFetchApp.fetch( this.BASE_URL + userCountry ).getContentText();
-        const jsonResponse = JSON.parse( response );
-        let isValid = false;
-        for ( const countryid in jsonResponse ) {
-            for ( const currencyid in jsonResponse[countryid].currencies ) {
-                if ( jsonResponse[countryid].currencies[currencyid].code === currencyCode ) {
-                    isValid = true;
-                }
-            }
-        }
-        return isValid;
     }
 }
 
@@ -771,18 +746,17 @@ class Menu {
     /**
      * SpoddyCoiner Addon Menu
      */
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * SpoddyCoiner var name in the gloabl scope
          * needed for addMenuItem functionName's
          */
-        this.app = this.Controller.instanceName;
+        this.app = this.SpoddyCoiner.instanceName;
 
         /**
          * Menu item labels
@@ -801,7 +775,7 @@ class Menu {
         /**
          * Dialogue headings / texts / labels
          */
-        this.ABOUT_HEADING = `${this.Controller.ADDON_NAME} v${this.Controller.VERSION}`;
+        this.ABOUT_HEADING = `${this.SpoddyCoiner.ADDON_NAME} v${this.SpoddyCoiner.VERSION}`;
         this.ABOUT_TEXT = 'Handy little functions to get data from the CoinMarketCap API.\n\nCaches the response to help reduce the number of API calls and keep within your rate-limits.\n\nhttps://github.com/SpoddyCoder/SpoddyCoiner';
         this.DOCS_FUNCTIONS_HEADING = 'Custom Functions';
         this.DOCS_FUNCTIONS_TEXT = 'Simply tap the function name into a cell to get more information.\n\n=SPODDYCOINER( coin, attribute, fiat )\n\n=SPODDYCOINER_CONVERT( coin, amount, coin )\nNB: currency ticker can be used instead of coin\n';
@@ -811,7 +785,7 @@ class Menu {
         this.CURRENT_KEY_LABEL = 'Current Key :';
         this.API_KEY_UPDATED_LABEL = 'API Key Updated';
         this.API_CACHE_TIME_HEADING = 'API Cache Time';
-        this.API_CACHE_KEY_PROMPT = `New cache time in seconds (max ${this.Model.APICache.MAX_CACHE_TIME})`;
+        this.API_CACHE_KEY_PROMPT = `New cache time in seconds (max ${this.SpoddyCoiner.Model.APICache.MAX_CACHE_TIME})`;
         this.API_CACHE_TIME_UPDATED_LABEL = 'API Cache Time Updated';
         this.NEW_CACHE_TIME_LABEL = 'New cache time :';
         this.NUM_CACHE_ITEMS_LABEL = ' API calls currently cached';
@@ -876,10 +850,10 @@ class Menu {
         ui.createAddonMenu()
             .addItem( this.MENU_CMC_API_KEY_LABEL, `${this.app}.View.Menu.updateCMCApiKey` )
             .addSubMenu( ui.createMenu( this.MENU_PREFERENCES_LABEL )
-                .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
-                .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
+                .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
+                .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
                 .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
-                .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
+                .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
                 .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
@@ -893,7 +867,7 @@ class Menu {
      */
     updateCMCApiKey() {
         const ui = SpreadsheetApp.getUi();
-        let apiKey = this.Model.GASProps.getAPIKey( true ); // masked
+        let apiKey = this.SpoddyCoiner.Model.GASProps.getAPIKey( true ); // masked
         const promptLabel = ( apiKey === '' ) ? this.ENTER_API_KEY_PROMPT : `${this.CURRENT_KEY_LABEL} ${apiKey}\n\n${this.ENTER_API_KEY_PROMPT}`;
         const result = ui.prompt(
             this.MENU_CMC_API_KEY_LABEL,
@@ -903,7 +877,7 @@ class Menu {
         const button = result.getSelectedButton();
         apiKey = result.getResponseText();
         if ( button === ui.Button.OK ) {
-            if ( !this.Model.GASProps.setAPIKey( apiKey ) ) {
+            if ( !this.SpoddyCoiner.Model.GASProps.setAPIKey( apiKey ) ) {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
@@ -924,13 +898,13 @@ class Menu {
         const button = result.getSelectedButton();
         const newTime = result.getResponseText();
         if ( button === ui.Button.OK ) {
-            if ( !this.Model.GASProps.setCacheTime( newTime ) ) {
+            if ( !this.SpoddyCoiner.Model.GASProps.setCacheTime( newTime ) ) {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
             ui.alert(
                 this.API_CACHE_TIME_UPDATED_LABEL,
-                `${this.NEW_CACHE_TIME_LABEL} ${this.Model.GASProps.getCacheTime( true )}`,
+                `${this.NEW_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`,
                 ui.ButtonSet.OK,
             );
         }
@@ -942,11 +916,12 @@ class Menu {
     clearAPICache() {
         const ui = SpreadsheetApp.getUi();
         let result = ui.alert(
-            `${this.Model.APICache.getNumItems()}${this.NUM_CACHE_ITEMS_LABEL}\n\n${this.CLEAR_CACHE_PROMPT}`,
+            this.MENU_CLEAR_CACHE_LABEL,
+            `${this.SpoddyCoiner.Model.APICache.getNumItems()}${this.NUM_CACHE_ITEMS_LABEL}\n\n${this.CLEAR_CACHE_PROMPT}`,
             ui.ButtonSet.YES_NO,
         );
         if ( result === ui.Button.YES ) {
-            if ( !this.Model.APICache.clear() ) {
+            if ( !this.SpoddyCoiner.Model.APICache.clear() ) {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
@@ -955,7 +930,7 @@ class Menu {
                 ui.ButtonSet.YES_NO,
             );
             if ( result === ui.Button.YES ) {
-                this.Controller.handleRefreshAllFunctionsConfirm();
+                this.SpoddyCoiner.handleRefreshAllFunctionsConfirm();
             }
         }
     }
@@ -966,7 +941,7 @@ class Menu {
     updateDefaultCurrency() {
         const ui = SpreadsheetApp.getUi();
         const result = ui.prompt(
-            `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`,
+            `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`,
             this.NEW_CURRENCY_CODE_HEADING,
             ui.ButtonSet.OK_CANCEL,
         );
@@ -976,13 +951,13 @@ class Menu {
             return;
         }
         if ( button === ui.Button.OK ) {
-            if ( !this.Model.GASProps.setDefaultCurrency( newCurrencyCode ) ) {
+            if ( !this.SpoddyCoiner.Model.GASProps.setDefaultCurrency( newCurrencyCode ) ) {
                 ui.alert( this.CURRENCY_CODE_NOT_VALID_LABEL, ui.ButtonSet.OK );
                 return;
             }
             ui.alert(
                 this.DEFAULT_CURRENCY_UPDATED_LABEL,
-                `${this.NEW_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`,
+                `${this.NEW_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`,
                 ui.ButtonSet.OK,
             );
         }
@@ -994,12 +969,16 @@ class Menu {
     showErrors() {
         const ui = SpreadsheetApp.getUi();
         let prompt = this.TURN_ERRORS_ON_PROMPT;
-        if ( this.Model.GASProps.getDisplayErrorMessages() ) {
+        if ( this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages() ) {
             prompt = this.TURN_ERRORS_OFF_PROMPT;
         }
-        const result = ui.alert( prompt, ui.ButtonSet.YES_NO );
+        const result = ui.alert(
+            `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`,
+            prompt,
+            ui.ButtonSet.YES_NO,
+        );
         if ( result === ui.Button.YES ) {
-            this.Model.GASProps.toggleErrorMessages();
+            this.SpoddyCoiner.Model.GASProps.toggleErrorMessages();
         }
     }
 
@@ -1046,7 +1025,12 @@ class Menu {
  * Spreadsheet display + interactions
  */
 class Sheet {
-    constructor() {
+    constructor( spoddycoiner ) {
+        /**
+         * main controller class
+         */
+        this.SpoddyCoiner = spoddycoiner;
+
         /**
          * SpoddyCoiner spreeadsheet functions
          * these are defined in Addon_Functions.gs
@@ -1079,7 +1063,7 @@ class Sheet {
 
 
 /**
- * SpoddyCoiner controller class
+ * SpoddyCoiner global scope reference
  */
 
 const App = new SpoddyCoiner( 'App' );
@@ -1096,10 +1080,12 @@ function onInstall( e ) {
  */
 function onOpen( e ) {
     if ( e && e.authMode === ScriptApp.AuthMode.NONE ) {
-        App.startNoAuth();
+        // Start in AuthMode NONE - addon menu contains the 'About' section only
+        App.View.Menu.addNoAuthMenu();
         return;
     }
-    App.start();
+    // Start in AuthMode FULL or LIMITED - full menu
+    App.View.Menu.addMenu();
 }
 
 /**
@@ -1118,7 +1104,8 @@ function onSelectionChange( e ) {
 
 
 /**
- * Returns coin price and other info from the CoinMarketCap API. Use the Addons -> SpoddyCoiner menu for more info.
+ * Returns coin price and other info from the CoinMarketCap API.
+ * Use the Addons -> SpoddyCoiner menu for more info.
  *
  * @param {"BTC"} coin          Coin ticker to lookup, default is BTC
  * @param {"price"} attribute   Attribute to return, default is "price", see docs for full list
@@ -1127,7 +1114,7 @@ function onSelectionChange( e ) {
  * @customfunction
  */
 function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = App.Model.GASProps.getDefaultCurrency() ) {
-    return App.getCoinAttribute(
+    return App.Controller.CMC.getCoinAttribute(
         ( coin.toString() ) || '',
         ( attribute.toString() ) || '',
         ( fiat.toString() ) || '',
@@ -1135,7 +1122,8 @@ function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = App.Model.GASPr
 }
 
 /**
- * Uses the CoinMarketCap API to convert one crypto/curreny to another crypto/currency. Use the Addons -> SpoddyCoiner menu for more info.
+ * Uses the CoinMarketCap API to convert one crypto/curreny to another crypto/currency.
+ * sUse the Addons -> SpoddyCoiner menu for more info.
  *
  * @param {0.00123456} amount   Amount to be converted
  * @param {"BTC"} symbol        Coin/currency ticker, default is BTC
@@ -1144,7 +1132,7 @@ function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = App.Model.GASPr
  * @customfunction
  */
 function SPODDYCOINER_CONVERT( amount, symbol = 'BTC', convert = App.Model.GASProps.getDefaultCurrency() ) {
-    return App.convert(
+    return App.Controller.CMC.convert(
         ( parseFloat( amount ) ) || 0,
         ( symbol.toString() ) || '',
         ( convert.toString() ) || '',

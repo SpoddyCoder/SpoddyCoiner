@@ -1,10 +1,9 @@
 class CMC {
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
     }
 
     /**
@@ -21,7 +20,7 @@ class CMC {
             case 'price':
             case 'market_cap':
             case 'volume_24h':
-                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
                 if ( !coinData.error_message ) {
                     value = coinData.quote[fiat][attribute];
                     Logger.log( `${coin} ${attribute} : ${value} ${fiat}` );
@@ -32,7 +31,7 @@ class CMC {
             case 'price_percent_change_24h':
             case 'price_percent_change_7d':
             case 'price_percent_change_30d':
-                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
                 if ( !coinData.error_message ) {
                     value = coinData.quote[fiat][attribute.replace( 'price_', '' )] / 100; // make compatible with standard Google Sheets percentage format
                     Logger.log( `${coin} ${attribute} : ${value}` );
@@ -42,7 +41,7 @@ class CMC {
             case 'circulating_supply':
             case 'total_supply':
             case 'max_supply':
-                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
                 if ( !coinData.error_message ) {
                     value = coinData[attribute];
                     Logger.log( `${coin} ${attribute} : ${value}` );
@@ -51,9 +50,9 @@ class CMC {
 
             case 'fcas_grade':
             case 'fcas_grade_full':
-                coinData = this.Model.CMCApi.getFCASQuoteLatest( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getFCASQuoteLatest( coin );
                 if ( !coinData.error_message ) {
-                    value = ( attribute === 'fcas_grade' ) ? coinData.grade : this.Model.CMCApi.FCAS_GRADES[coinData.grade];
+                    value = ( attribute === 'fcas_grade' ) ? coinData.grade : this.SpoddyCoiner.Model.CMCApi.FCAS_GRADES[coinData.grade];
                     Logger.log( `${coin} ${attribute} : ${value}` );
                 }
                 break;
@@ -61,7 +60,7 @@ class CMC {
             case 'fcas_score':
             case 'fcas_percent_change_24h':
             case 'fcas_point_change_24h':
-                coinData = this.Model.CMCApi.getFCASQuoteLatest( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getFCASQuoteLatest( coin );
                 if ( !coinData.error_message ) {
                     value = coinData[attribute.replace( 'fcas_', '' )];
                     if ( coinData.score === '' ) {
@@ -76,7 +75,7 @@ class CMC {
             case 'name':
             case 'description':
             case 'logo':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     value = coinData[attribute];
                     Logger.log( `${coin} ${attribute} : ${value}` );
@@ -85,7 +84,7 @@ class CMC {
 
             case 'date_added':
             case 'year_added':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     value = new Date( coinData.date_added ); // convert to GS native date format
                     value = ( attribute === 'year_added' ) ? value.getFullYear() : value;
@@ -95,7 +94,7 @@ class CMC {
 
             case 'tags':
             case 'tags_top_5':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     let { tags } = coinData;
                     tags = ( attribute === 'tags_top_5' ) ? tags.slice( 0, 5 ) : tags;
@@ -108,7 +107,7 @@ class CMC {
             case 'url_technical_doc':
             case 'url_explorer':
             case 'url_source_code':
-                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 if ( !coinData.error_message ) {
                     const { urls } = coinData;
                     const { [attribute.replace( 'url_', '' )]: urlWebsite } = urls;
@@ -124,7 +123,7 @@ class CMC {
 
         if ( coinData.error_message ) {
             Logger.log( `Error: ${coinData.error_message}` );
-            return ( this.Model.GASProps.getDisplayErrorMessages() ) ? coinData.error_message : '';
+            return ( this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages() ) ? coinData.error_message : '';
         }
         return value;
     }
@@ -136,7 +135,11 @@ class CMC {
      * @return {number}             the converted value
      */
     convert( amount, symbol, convert ) {
-        const conversionData = this.Model.CMCApi.priceConversion( amount, symbol, convert );
+        const conversionData = this.SpoddyCoiner.Model.CMCApi.priceConversion(
+            amount,
+            symbol,
+            convert,
+        );
         if ( conversionData.error_message ) {
             Logger.log( `Error: ${conversionData.error_message}` );
             return conversionData.error_message;
@@ -144,6 +147,29 @@ class CMC {
         const value = conversionData[convert].price;
         Logger.log( `${amount} ${symbol} : ${value} ${convert}` );
         return value;
+    }
+
+    /**
+     * Determine if a curency code is valid
+     * @param {string} currencyCode     the currency code to check
+     * @return {boolean}                is valid ISO-4217 country code
+     */
+    currencyCodeIsValid( currencyCode ) {
+        const currencyCodeToCheck = currencyCode.toString() || '';
+        if ( currencyCodeToCheck === '' ) {
+            return false;
+        }
+        const fiatMap = this.SpoddyCoiner.Model.CMCApi.getFiatMap();
+        if ( fiatMap.error_message !== '' ) {
+            return false;
+        }
+        let isValid = false;
+        Object.values( fiatMap.data ).forEach( ( fiatObject ) => {
+            if ( fiatObject.symbol === currencyCodeToCheck ) {
+                isValid = true;
+            }
+        } );
+        return isValid;
     }
 }
 

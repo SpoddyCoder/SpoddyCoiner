@@ -2,12 +2,11 @@ class GASProps {
     /**
      * GAS Properties Service
      */
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * Default values
@@ -61,7 +60,7 @@ class GASProps {
         if ( !this.userProps.setProperty( this.CMC_API_KEY_KEY, newApiKey ) ) {
             return false;
         }
-        this.Controller.handleApiKeyChange( newApiKey );
+        this.SpoddyCoiner.handleApiKeyChange( newApiKey );
         return true;
     }
 
@@ -74,7 +73,7 @@ class GASProps {
     getDefaultCurrency() {
         let currency = this.userProps.getProperty( this.DEFAULT_CURRENCY_KEY );
         if ( !currency ) {
-            currency = this.DEFAULT_DEFAULT_CURRENCY; // TODO: re-implement RCApi?
+            currency = this.DEFAULT_DEFAULT_CURRENCY;
             this.userProps.setProperty( this.DEFAULT_CURRENCY_KEY, currency );
         }
         return currency;
@@ -89,13 +88,13 @@ class GASProps {
         if ( typeof ( newCurrencyCode ) !== 'string' ) {
             return false;
         }
-        if ( !this.Model.RCApi.currencyCodeIsValid( newCurrencyCode ) ) {
+        if ( !this.SpoddyCoiner.Controller.CMC.currencyCodeIsValid( newCurrencyCode ) ) {
             return false;
         }
         if ( !this.userProps.setProperty( 'default_currency', newCurrencyCode ) ) {
             return false;
         }
-        this.Controller.handleDefaultCurrencyChange( newCurrencyCode );
+        this.SpoddyCoiner.handleDefaultCurrencyChange( newCurrencyCode );
         return true;
     }
 
@@ -141,13 +140,13 @@ class GASProps {
         if ( newTime.isNaN ) {
             return false;
         }
-        if ( newTime > this.Model.APICache.MAX_CACHE_TIME ) {
-            newTime = this.Model.APICache.MAX_CACHE_TIME;
+        if ( newTime > this.SpoddyCoiner.Model.APICache.MAX_CACHE_TIME ) {
+            newTime = this.SpoddyCoiner.Model.APICache.MAX_CACHE_TIME;
         }
         if ( !this.docProps.setProperty( this.API_CACHE_TIME_KEY, newTime ) ) {
             return false;
         }
-        this.Controller.handleCacheTimeChange( newTime );
+        this.SpoddyCoiner.handleCacheTimeChange( newTime );
         return true;
     }
 
@@ -182,7 +181,7 @@ class GASProps {
         if ( !this.docProps.setProperty( this.DISPLAY_ERROR_MESSAGES_KEY, dispErrMsgs ) ) {
             return false;
         }
-        this.Controller.handleDisplayErrorMessagesChange( dispErrMsgs );
+        this.SpoddyCoiner.handleDisplayErrorMessagesChange( dispErrMsgs );
         return true;
     }
 }

@@ -2,7 +2,12 @@
  * Spreadsheet display + interactions
  */
 class Sheet {
-    constructor() {
+    constructor( spoddycoiner ) {
+        /**
+         * main controller class
+         */
+        this.SpoddyCoiner = spoddycoiner;
+
         /**
          * SpoddyCoiner spreeadsheet functions
          * these are defined in Addon_Functions.gs

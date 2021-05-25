@@ -2,10 +2,12 @@ const CMC = require( './CMC' );
 const GASProps = require( '../model/GASProps' );
 const APICache = require( '../model/APICache' );
 const CMCApi = require( '../model/CMCApi' );
-const RCApi = require( '../model/RCApi' );
 const Menu = require( '../view/Menu' );
 const Sheet = require( '../view/Sheet' );
 
+/**
+ * Primary controller
+ */
 class SpoddyCoiner {
     /**
      * SpoddyCoiner Addon
@@ -23,7 +25,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.69';
+        this.VERSION = '1.2.0.70';
 
         /**
          * a loose MVC pattern
@@ -34,48 +36,12 @@ class SpoddyCoiner {
 
         this.Controller.CMC = new CMC( this );
 
+        this.Model.GASProps = new GASProps( this );
         this.Model.APICache = new APICache( this );
         this.Model.CMCApi = new CMCApi( this );
-        this.Model.RCApi = new RCApi();
-        this.Model.GASProps = new GASProps( this );
 
         this.View.Menu = new Menu( this );
-        this.View.Sheet = new Sheet();
-    }
-
-    /**
-     * Start in AuthMode FULL or LIMITED
-     */
-    start() {
-        this.View.Menu.addMenu();
-    }
-
-    /**
-     * Start in AuthMode NONE
-     * Addon menu contains the 'About' section only
-     */
-    startNoAuth() {
-        this.View.Menu.addNoAuthMenu();
-    }
-
-    /**
-     * @param {string} coin         the coin ticker
-     * @param {string} attribute    the attribute to get
-     * @param {string} [fiat]       fiat to return the value in (required for some attributes)
-     * @return {string|number}      the value of the attribute
-     */
-    getCoinAttribute( coin, attribute, fiat ) {
-        return this.Controller.CMC.getCoinAttribute( coin, attribute, fiat );
-    }
-
-    /**
-     * @param {number} amount       the amount to convert
-     * @param {string} symbol       the coin/currency ticker to convert from
-     * @param {string} convert      the coin/currnecy ticker to convert to
-     * @return {number}             the converted value
-     */
-    convert( amount, symbol, convert ) {
-        return this.Controller.CMC.convert( amount, symbol, convert );
+        this.View.Sheet = new Sheet( this );
     }
 
     /**

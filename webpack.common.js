@@ -2,11 +2,12 @@ const path = require( 'path' );
 const MergeIntoSingleFilePlugin = require( 'webpack-merge-and-include-globally' );
 
 module.exports = {
-    mode: 'none',
+    mode: '',
     entry: ['./src/controller/SpoddyCoiner.js'],
     output: {
         filename: '[name]',
         path: path.resolve( __dirname, 'dist' ),
+        clean: true,
     },
     optimization: {
         minimize: false,
@@ -20,7 +21,6 @@ module.exports = {
                     path.resolve( __dirname, 'src/model/GASProps.js' ),
                     path.resolve( __dirname, 'src/model/APICache.js' ),
                     path.resolve( __dirname, 'src/model/CMCApi.js' ),
-                    path.resolve( __dirname, 'src/model/RCApi.js' ),
                     path.resolve( __dirname, 'src/view/Menu.js' ),
                     path.resolve( __dirname, 'src/view/Sheet.js' ),
                     path.resolve( __dirname, 'src/Addon_Init.js' ),

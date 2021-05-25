@@ -1,10 +1,9 @@
 class CMCApi {
-    constructor( controller ) {
+    constructor( spoddycoiner ) {
         /**
-         * MVC references
+         * main controller class
          */
-        this.Controller = controller;
-        this.Model = this.Controller.Model;
+        this.SpoddyCoiner = spoddycoiner;
 
         /**
          * CMC API Endpoints
@@ -88,6 +87,16 @@ class CMCApi {
     }
 
     /**
+     * Make an API call to FIAT_MAP
+     *
+     * @return {Object}         JSON Object
+     */
+    getFiatMap() {
+        const query = 'start=1&limit=1000'; // all listed fiats
+        return this.call( this.FIAT_MAP, query );
+    }
+
+    /**
      * Make an API call to the CMC API (only if necessary, will fetch from cache if available)
      * handle errors, cahe + return the result
      *
@@ -99,11 +108,11 @@ class CMCApi {
         const fullQuery = `${endpoint}?${query}`;
         Logger.log( `Running query: ${fullQuery}` );
 
-        let data = this.Model.APICache.get( fullQuery );
-        if ( data ) {
+        const cacheData = this.SpoddyCoiner.Model.APICache.get( fullQuery );
+        if ( cacheData ) {
             Logger.log( 'Result fetched from cache' );
-            Logger.log( data );
-            return data;
+            Logger.log( cacheData );
+            return cacheData;
         }
 
         Logger.log( 'Not found in cache, fetching result from API...' );
@@ -113,7 +122,7 @@ class CMCApi {
                 contentType: 'application/json',
                 muteHttpExceptions: true,
                 headers: {
-                    'X-CMC_PRO_API_KEY': this.Model.GASProps.getAPIKey(),
+                    'X-CMC_PRO_API_KEY': this.SpoddyCoiner.Model.GASProps.getAPIKey(),
                     Accept: 'application/json',
                 },
             },
@@ -133,13 +142,23 @@ class CMCApi {
             return responseJson; // dont cache error reponses
         }
 
-        // get first item in the packet (all our calls currently return 1 coin/item)
-        // discard the status object
-        // cache & return
-        data = responseJson.data;
-        const returnData = Object.values( data )[0];
-        returnData.error_message = ''; // no error
-        this.Model.APICache.put( fullQuery, returnData );
+        let returnData = {};
+        switch ( endpoint ) {
+            case this.FIAT_MAP:
+                returnData.data = responseJson.data;
+                returnData.error_message = ''; // no error
+                // NB: we dont cache this call, infrequent and would use a lot of the cache space
+                break;
+            default:
+                // all other API calls...
+                // get first item (all our outer methods are meant to return 1 coin/item atm)
+                // discard the status object
+                // cache & return
+                [returnData] = Object.values( responseJson.data ); // 1st element
+                returnData.error_message = ''; // no error
+                this.SpoddyCoiner.Model.APICache.put( fullQuery, returnData );
+                break;
+        }
         Logger.log( returnData );
         return returnData;
     }
