@@ -12,8 +12,8 @@
  * @return                      Latest data about a coin
  * @customfunction
  */
-function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = Model.Props.getDefaultCurrency() ) {
-    return Controller.SpoddyCoiner.getCoinAttribute(
+function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = App.Model.GASProps.getDefaultCurrency() ) {
+    return App.getCoinAttribute(
         ( coin.toString() ) || '',
         ( attribute.toString() ) || '',
         ( fiat.toString() ) || '',
@@ -29,8 +29,8 @@ function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = Model.Props.get
  * @return                      Converted amount
  * @customfunction
  */
-function SPODDYCOINER_CONVERT( amount, symbol = 'BTC', convert = Model.Props.getDefaultCurrency() ) {
-    return Controller.SpoddyCoiner.convert(
+function SPODDYCOINER_CONVERT( amount, symbol = 'BTC', convert = App.Model.GASProps.getDefaultCurrency() ) {
+    return App.convert(
         ( parseFloat( amount ) ) || 0,
         ( symbol.toString() ) || '',
         ( convert.toString() ) || '',

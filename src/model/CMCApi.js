@@ -1,34 +1,39 @@
-const { Model } = require( '../controller/SpoddyCoiner' );
+class CMCApi {
+    constructor( controller ) {
+        /**
+         * MVC references
+         */
+        this.Controller = controller;
+        this.Model = this.Controller.Model;
 
-Model.CMCApi = {
+        /**
+         * CMC API Endpoints
+         */
+        this.BASE_URL = 'https://pro-api.coinmarketcap.com';
 
-    /**
-     * CMC API Endpoints
-     */
-    BASE_URL: 'https://pro-api.coinmarketcap.com',
+        // free plan
+        this.CRYPTOCURRENCY_MAP = '/v1/cryptocurrency/map';
+        this.CRYPTOCURRENCY_METADATA = '/v1/cryptocurrency/info';
+        this.CRYPTOCURRENCY_LISTINGS_LATEST = '/v1/cryptocurrency/listings/latest';
+        this.CRYPTOCURRENCY_QUOTES_LATEST = '/v1/cryptocurrency/quotes/latest';
+        this.FIAT_MAP = '/v1/fiat/map';
+        this.GLOBAL_METRICS_LATEST = '/v1/global-metrics/quotes/latest';
+        this.TOOLS_PRICE_CONVERSION = '/v1/tools/price-conversion';
+        this.PARTNERS_FCAS_LISTINGS_LATEST = '/v1/partners/flipside-crypto/fcas/listings/latest';
+        this.PARTNERS_FCAS_QUOTES_LATEST = '/v1/partners/flipside-crypto/fcas/quotes/latest';
+        this.KEY_INFO = '/v1/key/info';
 
-    // free plan
-    CRYPTOCURRENCY_MAP: '/v1/cryptocurrency/map',
-    CRYPTOCURRENCY_METADATA: '/v1/cryptocurrency/info',
-    CRYPTOCURRENCY_LISTINGS_LATEST: '/v1/cryptocurrency/listings/latest',
-    CRYPTOCURRENCY_QUOTES_LATEST: '/v1/cryptocurrency/quotes/latest',
-    FIAT_MAP: '/v1/fiat/map',
-    GLOBAL_METRICS_LATEST: '/v1/global-metrics/quotes/latest',
-    TOOLS_PRICE_CONVERSION: '/v1/tools/price-conversion',
-    PARTNERS_FCAS_LISTINGS_LATEST: '/v1/partners/flipside-crypto/fcas/listings/latest',
-    PARTNERS_FCAS_QUOTES_LATEST: '/v1/partners/flipside-crypto/fcas/quotes/latest',
-    KEY_INFO: '/v1/key/info',
-
-    /**
-     * FCAS Grades
-     */
-    FCAS_GRADES: {
-        S: 'Superb',
-        A: 'Attractive',
-        B: 'Basic',
-        C: 'Caution',
-        F: 'Fragile',
-    },
+        /**
+         * FCAS Grades
+         */
+        this.FCAS_GRADES = {
+            S: 'Superb',
+            A: 'Attractive',
+            B: 'Basic',
+            C: 'Caution',
+            F: 'Fragile',
+        };
+    }
 
     /**
      * Make an API call to CRYPTOCURRENCY_METADATA
@@ -36,10 +41,10 @@ Model.CMCApi = {
      * @param {string} slug     the CMC crypto slug
      * @return {object}         JSON Object
      */
-    getCryptoMetadata: ( symbol ) => {
+    getCryptoMetadata( symbol ) {
         const query = `symbol=${symbol.toUpperCase()}`;
-        return Model.CMCApi.call( Model.CMCApi.CRYPTOCURRENCY_METADATA, query );
-    },
+        return this.call( this.CRYPTOCURRENCY_METADATA, query );
+    }
 
     /**
      * Make an API call to CRYPTOCURRENCY_QUOTES_LATEST
@@ -48,10 +53,10 @@ Model.CMCApi = {
      * @param {string} fiat     fiat currency to use for the lookup
      * @return {object}         JSON Object
      */
-    getCryptoQuoteLatest: ( symbol, fiat ) => {
+    getCryptoQuoteLatest( symbol, fiat ) {
         const query = `symbol=${symbol.toUpperCase()}&convert=${fiat.toUpperCase()}`;
-        return Model.CMCApi.call( Model.CMCApi.CRYPTOCURRENCY_QUOTES_LATEST, query );
-    },
+        return this.call( this.CRYPTOCURRENCY_QUOTES_LATEST, query );
+    }
 
     /**
      * Make an API call to PARTNERS_FCAS_QUOTES_LATEST
@@ -59,15 +64,15 @@ Model.CMCApi = {
      * @param {string} slug     the crypto symbol
      * @return {object}         JSON Object
      */
-    getFCASQuoteLatest: ( symbol ) => {
+    getFCASQuoteLatest( symbol ) {
         const query = `symbol=${symbol.toUpperCase()}`;
-        const returnData = Model.CMCApi.call( Model.CMCApi.PARTNERS_FCAS_QUOTES_LATEST, query );
+        const returnData = this.call( this.PARTNERS_FCAS_QUOTES_LATEST, query );
         if ( returnData.error_message.includes( 'No data found' ) ) {
             returnData.error_message = ''; // not expecting all coins to be supported, so suppress this error
             returnData.score = '';
         }
         return returnData;
-    },
+    }
 
     /**
      * Make an API call to TOOLS_PRICE_CONVERSION
@@ -77,10 +82,10 @@ Model.CMCApi = {
      * @param {string} convert  the coin/currnecy to convert to
      * @return {Object}         JSON Object
      */
-    priceConversion: ( amount, symbol, convert ) => {
+    priceConversion( amount, symbol, convert ) {
         const query = `amount=${amount}&symbol=${symbol.toUpperCase()}&convert=${convert.toUpperCase()}`;
-        return Model.CMCApi.call( Model.CMCApi.TOOLS_PRICE_CONVERSION, query );
-    },
+        return this.call( this.TOOLS_PRICE_CONVERSION, query );
+    }
 
     /**
      * Make an API call to the CMC API (only if necessary, will fetch from cache if available)
@@ -90,11 +95,11 @@ Model.CMCApi = {
      * @param {string} query        query to run (not including the API key)
      * @return {object}             JSON Object, "error_message" value is empty if no error occurred
      */
-    call: ( endpoint, query ) => {
+    call( endpoint, query ) {
         const fullQuery = `${endpoint}?${query}`;
         Logger.log( `Running query: ${fullQuery}` );
 
-        let data = Model.Cache.get( fullQuery );
+        let data = this.Model.APICache.get( fullQuery );
         if ( data ) {
             Logger.log( 'Result fetched from cache' );
             Logger.log( data );
@@ -103,12 +108,12 @@ Model.CMCApi = {
 
         Logger.log( 'Not found in cache, fetching result from API...' );
         const response = UrlFetchApp.fetch(
-            Model.CMCApi.BASE_URL + fullQuery,
+            this.BASE_URL + fullQuery,
             {
                 contentType: 'application/json',
                 muteHttpExceptions: true,
                 headers: {
-                    'X-CMC_PRO_API_KEY': Model.Props.getAPIKey(),
+                    'X-CMC_PRO_API_KEY': this.Model.GASProps.getAPIKey(),
                     Accept: 'application/json',
                 },
             },
@@ -134,9 +139,10 @@ Model.CMCApi = {
         data = responseJson.data;
         const returnData = Object.values( data )[0];
         returnData.error_message = ''; // no error
-        Model.Cache.put( fullQuery, returnData );
+        this.Model.APICache.put( fullQuery, returnData );
         Logger.log( returnData );
         return returnData;
-    },
+    }
+}
 
-};
+module.exports = { CMCApi };

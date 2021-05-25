@@ -6,11 +6,8 @@
  * SpoddyCoiner controller class
  */
 const SpoddyCoiner = require( './controller/SpoddyCoiner' );
-const Menu = require( './view/Menu' );
 
-const App = new SpoddyCoiner(
-    new Menu(),
-);
+const App = new SpoddyCoiner( 'App' );
 
 /**
  * @OnlyCurrentDoc
@@ -27,7 +24,7 @@ function onOpen( e ) {
         App.startNoAuth();
         return;
     }
-    App.startNoAuth();
+    App.start();
 }
 
 /**

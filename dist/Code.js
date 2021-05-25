@@ -1,20 +1,54 @@
+
 class SpoddyCoiner {
-    constructor( menu ) {
-        this.Menu = menu;
+    /**
+     * SpoddyCoiner Addon
+     *
+     * @param {string} instanceName     the variable name of the SpoddyCoiner instance
+     */
+    constructor( instanceName ) {
+        /**
+         * the cost of AppsScript menu bindings
+         * addMenuItem() functionName's must be the string name of a function in the global scope
+         */
+        this.instanceName = instanceName;
+
+        /**
+         * Addon Name + Version
+         */
+        this.ADDON_NAME = 'SpoddyCoiner';
+        this.VERSION = '1.2.0.69';
+
+        /**
+         * a loose MVC pattern
+         */
+        this.Controller = {};
+        this.Model = {};
+        this.View = {};
+
+        this.Controller.CMC = new CMC( this );
+
+        this.Model.APICache = new APICache( this );
+        this.Model.CMCApi = new CMCApi( this );
+        this.Model.RCApi = new RCApi();
+        this.Model.GASProps = new GASProps( this );
+
+        this.View.Menu = new Menu( this );
+        this.View.Sheet = new Sheet();
     }
 
     /**
      * Start in AuthMode FULL or LIMITED
      */
     start() {
-        this.Menu.addMenu();
+        this.View.Menu.addMenu();
     }
 
     /**
      * Start in AuthMode NONE
+     * Addon menu contains the 'About' section only
      */
     startNoAuth() {
-        this.Menu.addNoAuthMenu(); // renders the 'About' section only
+        this.View.Menu.addNoAuthMenu();
     }
 
     /**
@@ -24,7 +58,7 @@ class SpoddyCoiner {
      * @return {string|number}      the value of the attribute
      */
     getCoinAttribute( coin, attribute, fiat ) {
-        return this.CMC.getCoinAttribute( coin, attribute, fiat );
+        return this.Controller.CMC.getCoinAttribute( coin, attribute, fiat );
     }
 
     /**
@@ -34,42 +68,1011 @@ class SpoddyCoiner {
      * @return {number}             the converted value
      */
     convert( amount, symbol, convert ) {
-        return this.CMC.convert( amount, symbol, convert );
+        return this.Controller.CMC.convert( amount, symbol, convert );
+    }
+
+    /**
+     * Model change handlers
+     * update the View as props change
+     */
+    handleApiKeyChange() {
+        this.View.Menu.addMenu();
+        this.View.Sheet.refreshAllFunctions();
+    }
+
+    handleCacheTimeChange() {
+        this.View.Menu.addMenu();
+    }
+
+    handleDefaultCurrencyChange() {
+        this.View.Menu.addMenu();
+        this.View.Sheet.refreshAllFunctions();
+    }
+
+    handleDisplayErrorMessagesChange() {
+        this.View.Menu.addMenu();
+        this.View.Sheet.refreshAllFunctions();
+    }
+
+    /**
+     * View event handlers
+     */
+    handleRefreshAllFunctionsConfirm() {
+        this.View.Sheet.refreshAllFunctions();
     }
 }
 
 
-import * as Constants from '../controller/Constants';
+class CMC {
+    constructor( controller ) {
+        /**
+         * MVC references
+         */
+        this.Controller = controller;
+        this.Model = this.Controller.Model;
+    }
 
+    /**
+     * @param {string} coin         the coin ticker
+     * @param {string} attribute    the attribute to get
+     * @param {string} [fiat]       fiat to return the value in (required for some attributes)
+     * @return {string|number}      the value of the attribute
+     */
+    getCoinAttribute( coin, attribute, fiat ) {
+        let coinData = {};
+        let value;
+
+        switch ( attribute ) {
+            case 'price':
+            case 'market_cap':
+            case 'volume_24h':
+                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                if ( !coinData.error_message ) {
+                    value = coinData.quote[fiat][attribute];
+                    Logger.log( `${coin} ${attribute} : ${value} ${fiat}` );
+                }
+                break;
+
+            case 'price_percent_change_1h':
+            case 'price_percent_change_24h':
+            case 'price_percent_change_7d':
+            case 'price_percent_change_30d':
+                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                if ( !coinData.error_message ) {
+                    value = coinData.quote[fiat][attribute.replace( 'price_', '' )] / 100; // make compatible with standard Google Sheets percentage format
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'circulating_supply':
+            case 'total_supply':
+            case 'max_supply':
+                coinData = this.Model.CMCApi.getCryptoQuoteLatest( coin, fiat );
+                if ( !coinData.error_message ) {
+                    value = coinData[attribute];
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'fcas_grade':
+            case 'fcas_grade_full':
+                coinData = this.Model.CMCApi.getFCASQuoteLatest( coin );
+                if ( !coinData.error_message ) {
+                    value = ( attribute === 'fcas_grade' ) ? coinData.grade : this.Model.CMCApi.FCAS_GRADES[coinData.grade];
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'fcas_score':
+            case 'fcas_percent_change_24h':
+            case 'fcas_point_change_24h':
+                coinData = this.Model.CMCApi.getFCASQuoteLatest( coin );
+                if ( !coinData.error_message ) {
+                    value = coinData[attribute.replace( 'fcas_', '' )];
+                    if ( coinData.score === '' ) {
+                        value = ''; // if there is no FCAS score, set to empty for all FCAS attributes
+                    } else {
+                        value = ( attribute === 'fcas_percent_change_24h' ) ? value / 100 : value; // convert to native GS percent format
+                    }
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'name':
+            case 'description':
+            case 'logo':
+                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                if ( !coinData.error_message ) {
+                    value = coinData[attribute];
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'date_added':
+            case 'year_added':
+                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                if ( !coinData.error_message ) {
+                    value = new Date( coinData.date_added ); // convert to GS native date format
+                    value = ( attribute === 'year_added' ) ? value.getFullYear() : value;
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'tags':
+            case 'tags_top_5':
+                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                if ( !coinData.error_message ) {
+                    let { tags } = coinData;
+                    tags = ( attribute === 'tags_top_5' ) ? tags.slice( 0, 5 ) : tags;
+                    value = tags.join( ', ' ); // return a CSV list
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            case 'url_website':
+            case 'url_technical_doc':
+            case 'url_explorer':
+            case 'url_source_code':
+                coinData = this.Model.CMCApi.getCryptoMetadata( coin );
+                if ( !coinData.error_message ) {
+                    const { urls } = coinData;
+                    const { [attribute.replace( 'url_', '' )]: urlWebsite } = urls;
+                    [value] = urlWebsite; // just return the first for now (TODO)
+                    Logger.log( `${coin} ${attribute} : ${value}` );
+                }
+                break;
+
+            default:
+                coinData.error_message = `Invalid attribute : ${attribute}`;
+                break;
+        }
+
+        if ( coinData.error_message ) {
+            Logger.log( `Error: ${coinData.error_message}` );
+            return ( this.Model.GASProps.getDisplayErrorMessages() ) ? coinData.error_message : '';
+        }
+        return value;
+    }
+
+    /**
+     * @param {number} amount       the amount to convert
+     * @param {string} symbol       the coin/currency ticker to convert from
+     * @param {string} convert      the coin/currnecy ticker to convert to
+     * @return {number}             the converted value
+     */
+    convert( amount, symbol, convert ) {
+        const conversionData = this.Model.CMCApi.priceConversion( amount, symbol, convert );
+        if ( conversionData.error_message ) {
+            Logger.log( `Error: ${conversionData.error_message}` );
+            return conversionData.error_message;
+        }
+        const value = conversionData[convert].price;
+        Logger.log( `${amount} ${symbol} : ${value} ${convert}` );
+        return value;
+    }
+}
+
+
+class GASProps {
+    /**
+     * GAS Properties Service
+     */
+    constructor( controller ) {
+        /**
+         * MVC references
+         */
+        this.Controller = controller;
+        this.Model = this.Controller.Model;
+
+        /**
+         * Default values
+         */
+        this.DEFAULT_CACHE_TIME = 3600;
+        this.DEFAULT_DEFAULT_CURRENCY = 'USD';
+
+        /**
+         * Property key names
+         */
+        this.CMC_API_KEY_KEY = 'cmc_api_key';
+        this.DEFAULT_CURRENCY_KEY = 'default_currency';
+        this.API_CACHE_TIME_KEY = 'api_cache_time';
+        this.DISPLAY_ERROR_MESSAGES_KEY = 'display_error_messages';
+
+        /**
+         * GAS Properties Services
+         */
+        this.userProps = PropertiesService.getUserProperties();
+        this.docProps = PropertiesService.getDocumentProperties();
+    }
+
+    /**
+     * Get API Key from user props
+     * if not defined set it ""
+     *
+     * @param {boolean} masked  mask all but the first and last letter
+     * @return {string}         api key
+     */
+    getAPIKey( masked = false ) {
+        let apiKey = this.userProps.getProperty( this.CMC_API_KEY_KEY );
+        if ( !apiKey ) {
+            apiKey = '';
+            this.userProps.setProperty( this.CMC_API_KEY_KEY, apiKey );
+        }
+        if ( masked ) {
+            apiKey = apiKey.replace( /(?!^.?).(?!.{0}$)/gi, '*' );
+        }
+        return apiKey;
+    }
+
+    /**
+     * Set API Key in user props
+     *
+     * @return {boolean}    was updated
+     */
+    setAPIKey( newApiKey ) {
+        if ( typeof ( newApiKey ) !== 'string' ) {
+            return false;
+        }
+        if ( !this.userProps.setProperty( this.CMC_API_KEY_KEY, newApiKey ) ) {
+            return false;
+        }
+        this.Controller.handleApiKeyChange( newApiKey );
+        return true;
+    }
+
+    /**
+     * Get default currency from user props
+     * if not defined set it currency looked up from users locale
+     *
+     * @return {string}     currency code
+     */
+    getDefaultCurrency() {
+        let currency = this.userProps.getProperty( this.DEFAULT_CURRENCY_KEY );
+        if ( !currency ) {
+            currency = this.DEFAULT_DEFAULT_CURRENCY; // TODO: re-implement RCApi?
+            this.userProps.setProperty( this.DEFAULT_CURRENCY_KEY, currency );
+        }
+        return currency;
+    }
+
+    /**
+     * Set default currency in user props
+     *
+     * @return {boolean}    was updated
+     */
+    setDefaultCurrency( newCurrencyCode ) {
+        if ( typeof ( newCurrencyCode ) !== 'string' ) {
+            return false;
+        }
+        if ( !this.Model.RCApi.currencyCodeIsValid( newCurrencyCode ) ) {
+            return false;
+        }
+        if ( !this.userProps.setProperty( 'default_currency', newCurrencyCode ) ) {
+            return false;
+        }
+        this.Controller.handleDefaultCurrencyChange( newCurrencyCode );
+        return true;
+    }
+
+    /**
+     * Get cache time from document props
+     * if not defined set it to default value
+     *
+     * @param {boolean} humanReadable   return value in seconds or a human readable string
+     * @return {mixed}                  cache time in seconds or h/m/s
+     */
+    getCacheTime( humanReadable = false ) {
+        let cacheTime = parseInt( this.docProps.getProperty( this.API_CACHE_TIME_KEY ), 10 );
+        if ( cacheTime.isNaN ) {
+            cacheTime = this.DEFAULT_CACHE_TIME;
+            this.docProps.setProperty( this.API_CACHE_TIME_KEY, cacheTime );
+        }
+        if ( humanReadable ) {
+            let text = '';
+            const numHrs = Math.floor( ( ( cacheTime % 31536000 ) % 86400 ) / 3600 );
+            const numMins = Math.floor( ( ( ( cacheTime % 31536000 ) % 86400 ) % 3600 ) / 60 );
+            const numSecs = ( ( ( cacheTime % 31536000 ) % 86400 ) % 3600 ) % 60;
+            if ( numHrs > 0 ) {
+                text += `${numHrs}h `;
+            }
+            if ( numMins > 0 ) {
+                text += `${numMins}m `;
+            }
+            if ( numSecs > 0 ) {
+                text += `${numSecs}s`;
+            }
+            return text;
+        }
+        return cacheTime;
+    }
+
+    /**
+     * Set cache time (in seconds) in document props
+     *
+     * @return {boolean}    was updated
+     */
+    setCacheTime( time ) {
+        let newTime = parseInt( time, 10 );
+        if ( newTime.isNaN ) {
+            return false;
+        }
+        if ( newTime > this.Model.APICache.MAX_CACHE_TIME ) {
+            newTime = this.Model.APICache.MAX_CACHE_TIME;
+        }
+        if ( !this.docProps.setProperty( this.API_CACHE_TIME_KEY, newTime ) ) {
+            return false;
+        }
+        this.Controller.handleCacheTimeChange( newTime );
+        return true;
+    }
+
+    /**
+     * Get Display Error Messages from doc props
+     * if not defined set it to On
+     *
+     * @param {boolean} humanReadable   return value as boolean or human readable string
+     * @return {boolean}                was updated
+     */
+    getDisplayErrorMessages( humanReadable = false ) {
+        let errMsgs = this.docProps.getProperty( this.DISPLAY_ERROR_MESSAGES_KEY );
+        if ( !errMsgs ) {
+            errMsgs = 'On';
+            this.docProps.setProperty( this.DISPLAY_ERROR_MESSAGES_KEY, errMsgs );
+        }
+        if ( !humanReadable ) {
+            // convert to bool, the string value is stored in the props object
+            return ( errMsgs === 'On' );
+        }
+        return errMsgs;
+    }
+
+    /**
+     * Toggle Error Messages
+     *
+     * @return {boolean}    was updated
+     */
+    toggleErrorMessages() {
+        let dispErrMsgs = this.getDisplayErrorMessages();
+        dispErrMsgs = ( dispErrMsgs ) ? 'Off' : 'On'; // toggle
+        if ( !this.docProps.setProperty( this.DISPLAY_ERROR_MESSAGES_KEY, dispErrMsgs ) ) {
+            return false;
+        }
+        this.Controller.handleDisplayErrorMessagesChange( dispErrMsgs );
+        return true;
+    }
+}
+
+
+class APICache {
+    /**
+     * API Cache
+     */
+    constructor( controller ) {
+        /**
+         * MVC references
+         */
+        this.Controller = controller;
+        this.Model = this.Controller.Model;
+
+        /**
+         * Cache time in seconds
+         */
+        this.MAX_CACHE_TIME = 21600;
+
+        /**
+         * The cache key for the Cache Keys Tracker
+         */
+        this.CACHE_KEYS = 'cache_keys';
+
+        /**
+         * GAS user cache service
+         */
+        this.userCache = CacheService.getUserCache();
+    }
+
+    /**
+     * Put string or JSON object into cache by key name
+     *
+     * @param {string} key  key name
+     * @param {string} obj  object/string to store
+     * @return {boolean}    succesfully added
+     */
+    put( key, obj ) {
+        const prefixedKey = this.prefixKey( key );
+        let returnObj = obj;
+        if ( typeof ( obj ) !== 'string' ) {
+            returnObj = JSON.stringify( obj );
+        }
+        if ( key !== this.CACHE_KEYS ) {
+            this.addToCacheKeysTracker( prefixedKey );
+        }
+        return this.userCache.put( prefixedKey, returnObj, this.Model.GASProps.getCacheTime() );
+    }
+
+    /**
+     * Get String or JSON object from cache by key name
+     *
+     * @param {string} key      key name
+     * @return {object|string}  the JSON object/string/null
+     */
+    get( key ) {
+        const prefixedKey = this.prefixKey( key );
+        const obj = this.userCache.get( prefixedKey );
+        let returnObj = obj;
+        try {
+            returnObj = JSON.parse( obj );
+        } catch ( e ) {
+            return returnObj; // string
+        }
+        // init the cache_keys tracker when it's needed (can expire outside the scope of the script)
+        if ( key === this.CACHE_KEYS && obj === null ) {
+            this.put( this.CACHE_KEYS, [] );
+            return [];
+        }
+        return returnObj; // object or null
+    }
+
+    /**
+     * Clear the cache, using our cache_keys tracker
+     *
+     * @return {boolean}    cleared OK
+     */
+    clear() {
+        const cacheKeys = this.get( this.CACHE_KEYS );
+        if ( cacheKeys ) {
+            this.userCache.removeAll( cacheKeys );
+            this.put( this.CACHE_KEYS, [] );
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get number of items stored in cache
+     *
+     * @return {number}     the number of items currently cached
+     */
+    getNumItems() {
+        return this.get( this.CACHE_KEYS ).length;
+    }
+
+    /**
+     * Prefix all cache keys with VERSION to facilitate invalidation
+     *
+     * @param {string} key  the base key name to apply prefix
+     * @return {string}     the prefixed key name
+     */
+    prefixKey( key ) {
+        if ( key.includes( `${this.Controller.VERSION}_` ) ) {
+            return key;
+        }
+        return `${this.Controller.VERSION}_${key}`;
+    }
+
+    /**
+     * Add key to "cache_keys" tracker array
+     *
+     * @param {string} key  key name
+     * @return {boolean}    was added, true|false
+     */
+    addToCacheKeysTracker( key ) {
+        const cacheKeys = this.get( this.CACHE_KEYS );
+        if ( cacheKeys.indexOf( key ) === -1 ) {
+            cacheKeys.push( key );
+            return this.put( this.CACHE_KEYS, cacheKeys );
+        }
+        return false;
+    }
+}
+
+
+class CMCApi {
+    constructor( controller ) {
+        /**
+         * MVC references
+         */
+        this.Controller = controller;
+        this.Model = this.Controller.Model;
+
+        /**
+         * CMC API Endpoints
+         */
+        this.BASE_URL = 'https://pro-api.coinmarketcap.com';
+
+        // free plan
+        this.CRYPTOCURRENCY_MAP = '/v1/cryptocurrency/map';
+        this.CRYPTOCURRENCY_METADATA = '/v1/cryptocurrency/info';
+        this.CRYPTOCURRENCY_LISTINGS_LATEST = '/v1/cryptocurrency/listings/latest';
+        this.CRYPTOCURRENCY_QUOTES_LATEST = '/v1/cryptocurrency/quotes/latest';
+        this.FIAT_MAP = '/v1/fiat/map';
+        this.GLOBAL_METRICS_LATEST = '/v1/global-metrics/quotes/latest';
+        this.TOOLS_PRICE_CONVERSION = '/v1/tools/price-conversion';
+        this.PARTNERS_FCAS_LISTINGS_LATEST = '/v1/partners/flipside-crypto/fcas/listings/latest';
+        this.PARTNERS_FCAS_QUOTES_LATEST = '/v1/partners/flipside-crypto/fcas/quotes/latest';
+        this.KEY_INFO = '/v1/key/info';
+
+        /**
+         * FCAS Grades
+         */
+        this.FCAS_GRADES = {
+            S: 'Superb',
+            A: 'Attractive',
+            B: 'Basic',
+            C: 'Caution',
+            F: 'Fragile',
+        };
+    }
+
+    /**
+     * Make an API call to CRYPTOCURRENCY_METADATA
+     *
+     * @param {string} slug     the CMC crypto slug
+     * @return {object}         JSON Object
+     */
+    getCryptoMetadata( symbol ) {
+        const query = `symbol=${symbol.toUpperCase()}`;
+        return this.call( this.CRYPTOCURRENCY_METADATA, query );
+    }
+
+    /**
+     * Make an API call to CRYPTOCURRENCY_QUOTES_LATEST
+     *
+     * @param {string} symbol   the crypto symbol
+     * @param {string} fiat     fiat currency to use for the lookup
+     * @return {object}         JSON Object
+     */
+    getCryptoQuoteLatest( symbol, fiat ) {
+        const query = `symbol=${symbol.toUpperCase()}&convert=${fiat.toUpperCase()}`;
+        return this.call( this.CRYPTOCURRENCY_QUOTES_LATEST, query );
+    }
+
+    /**
+     * Make an API call to PARTNERS_FCAS_QUOTES_LATEST
+     *
+     * @param {string} slug     the crypto symbol
+     * @return {object}         JSON Object
+     */
+    getFCASQuoteLatest( symbol ) {
+        const query = `symbol=${symbol.toUpperCase()}`;
+        const returnData = this.call( this.PARTNERS_FCAS_QUOTES_LATEST, query );
+        if ( returnData.error_message.includes( 'No data found' ) ) {
+            returnData.error_message = ''; // not expecting all coins to be supported, so suppress this error
+            returnData.score = '';
+        }
+        return returnData;
+    }
+
+    /**
+     * Make an API call to TOOLS_PRICE_CONVERSION
+     *
+     * @param {number} amount   the amount to convert
+     * @param {string} symbol   the coin/currency to convert from
+     * @param {string} convert  the coin/currnecy to convert to
+     * @return {Object}         JSON Object
+     */
+    priceConversion( amount, symbol, convert ) {
+        const query = `amount=${amount}&symbol=${symbol.toUpperCase()}&convert=${convert.toUpperCase()}`;
+        return this.call( this.TOOLS_PRICE_CONVERSION, query );
+    }
+
+    /**
+     * Make an API call to the CMC API (only if necessary, will fetch from cache if available)
+     * handle errors, cahe + return the result
+     *
+     * @param {string} endpoint     CMC query endpoint
+     * @param {string} query        query to run (not including the API key)
+     * @return {object}             JSON Object, "error_message" value is empty if no error occurred
+     */
+    call( endpoint, query ) {
+        const fullQuery = `${endpoint}?${query}`;
+        Logger.log( `Running query: ${fullQuery}` );
+
+        let data = this.Model.APICache.get( fullQuery );
+        if ( data ) {
+            Logger.log( 'Result fetched from cache' );
+            Logger.log( data );
+            return data;
+        }
+
+        Logger.log( 'Not found in cache, fetching result from API...' );
+        const response = UrlFetchApp.fetch(
+            this.BASE_URL + fullQuery,
+            {
+                contentType: 'application/json',
+                muteHttpExceptions: true,
+                headers: {
+                    'X-CMC_PRO_API_KEY': this.Model.GASProps.getAPIKey(),
+                    Accept: 'application/json',
+                },
+            },
+        );
+        let responseJson = JSON.parse( response.getContentText() );
+
+        let errMsg = '';
+        if ( response.getResponseCode() !== 200 ) {
+            if ( typeof ( responseJson.status ) === 'undefined' ) {
+                // uncontrolled error
+                errMsg = '! Unexpected CMC API Response';
+            }
+            // controlled error
+            errMsg = ( errMsg ) || responseJson.status.error_message;
+            responseJson = { error_message: errMsg };
+            Logger.log( responseJson );
+            return responseJson; // dont cache error reponses
+        }
+
+        // get first item in the packet (all our calls currently return 1 coin/item)
+        // discard the status object
+        // cache & return
+        data = responseJson.data;
+        const returnData = Object.values( data )[0];
+        returnData.error_message = ''; // no error
+        this.Model.APICache.put( fullQuery, returnData );
+        Logger.log( returnData );
+        return returnData;
+    }
+}
+
+
+
+class RCApi {
+    constructor() {
+        /**
+         * RestCountries API Endpoint
+         */
+        this.BASE_URL = 'https://restcountries.eu/rest/v2/lang/';
+    }
+
+    /**
+     * Use the RestCountries API to lookup users preferred currency based on their locale
+     *
+     * @return {string}   ISO-4127 currency code
+     */
+    lookupCurrency() {
+        const userCountry = Session.getActiveUserLocale();
+        const timeZone = Session.getScriptTimeZone();
+        // const region = timeZone.split( '/' )[0];
+        const capital = timeZone.split( '/' )[1];
+        const response = UrlFetchApp.fetch( this.BASE_URL + userCountry ).getContentText();
+        const jsonResponse = JSON.parse( response );
+        const currencyCode = jsonResponse.find( ( country ) => country.capital === capital )
+            .currencies[0].code;
+        return currencyCode;
+    }
+
+    /**
+     * Use the RestCountries API to determine if a country code is valid ISO-4217
+     *
+     * @param {string} currencyCode     the currency code string to check
+     *
+     * @return {boolean}                is valid ISO-4217, true|false
+     */
+    currencyCodeIsValid( currencyCode ) {
+        const userCountry = Session.getActiveUserLocale();
+        const response = UrlFetchApp.fetch( this.BASE_URL + userCountry ).getContentText();
+        const jsonResponse = JSON.parse( response );
+        let isValid = false;
+        for ( const countryid in jsonResponse ) {
+            for ( const currencyid in jsonResponse[countryid].currencies ) {
+                if ( jsonResponse[countryid].currencies[currencyid].code === currencyCode ) {
+                    isValid = true;
+                }
+            }
+        }
+        return isValid;
+    }
+}
+
+
+/**
+ * Menu display + interactions
+ */
 class Menu {
     /**
-     * SpoddyCoiner Addon Menu's
-     * @param {SpoddyCoiner} Controller     the main controller class instance
+     * SpoddyCoiner Addon Menu
      */
-    constructor( Controller ) {
-        this.Controller = Controller;
-        this.Ui = SpreadsheetApp.getUi();
+    constructor( controller ) {
+        /**
+         * MVC references
+         */
+        this.Controller = controller;
+        this.Model = this.Controller.Model;
+
+        /**
+         * SpoddyCoiner var name in the gloabl scope
+         * needed for addMenuItem functionName's
+         */
+        this.app = this.Controller.instanceName;
+
+        /**
+         * Menu item labels
+         */
+        this.MENU_ABOUT_LABEL = 'About';
+        this.MENU_CMC_API_KEY_LABEL = 'CoinMarketCap API Key';
+        this.MENU_PREFERENCES_LABEL = 'Preferences';
+        this.MENU_DEFAULT_CURRENCY_LABEL = 'Default Currency:';
+        this.MENU_CACHE_TIME_LABEL = 'Cache Time:';
+        this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
+        this.MENU_SHOW_ERRORS_LABEL = 'Show Errors:';
+        this.MENU_DOCS_LABEL = 'Docs';
+        this.MENU_FUNCTIONS_LABEL = 'Functions';
+        this.MENU_ATTRIBUTES_LABEL = 'Attributes';
+
+        /**
+         * Dialogue headings / texts / labels
+         */
+        this.ABOUT_HEADING = `${this.Controller.ADDON_NAME} v${this.Controller.VERSION}`;
+        this.ABOUT_TEXT = 'Handy little functions to get data from the CoinMarketCap API.\n\nCaches the response to help reduce the number of API calls and keep within your rate-limits.\n\nhttps://github.com/SpoddyCoder/SpoddyCoiner';
+        this.DOCS_FUNCTIONS_HEADING = 'Custom Functions';
+        this.DOCS_FUNCTIONS_TEXT = 'Simply tap the function name into a cell to get more information.\n\n=SPODDYCOINER( coin, attribute, fiat )\n\n=SPODDYCOINER_CONVERT( coin, amount, coin )\nNB: currency ticker can be used instead of coin\n';
+        this.DOCS_ATTRIBUTES_HEADING = 'Coin Attributes';
+        this.DOCS_ATTRIBUTES_TEXT = '';
+        this.ENTER_API_KEY_PROMPT = 'Enter your API key';
+        this.CURRENT_KEY_LABEL = 'Current Key :';
+        this.API_KEY_UPDATED_LABEL = 'API Key Updated';
+        this.API_CACHE_TIME_HEADING = 'API Cache Time';
+        this.API_CACHE_KEY_PROMPT = `New cache time in seconds (max ${this.Model.APICache.MAX_CACHE_TIME})`;
+        this.API_CACHE_TIME_UPDATED_LABEL = 'API Cache Time Updated';
+        this.NEW_CACHE_TIME_LABEL = 'New cache time :';
+        this.NUM_CACHE_ITEMS_LABEL = ' API calls currently cached';
+        this.CLEAR_CACHE_PROMPT = 'Do you want to reset the API cache?';
+        this.CACHE_CLEAR_UPDATE_FUNCTIONS_PROMPT = 'API cache cleared.\n\nDo you want to re-run all the SPODDYCOINER functions on the active sheet?';
+        this.NEW_CURRENCY_CODE_HEADING = 'Enter new 3 letter currency code (ISO 4217)';
+        this.DEFAULT_CURRENCY_UPDATED_LABEL = 'Default Currency Updated';
+        this.NEW_CURRENCY_LABEL = 'New currency code :';
+        this.CURRENCY_CODE_NOT_VALID_LABEL = 'Currency code was not valid!';
+        this.TURN_ERRORS_OFF_PROMPT = 'Do you want to turn errors off?';
+        this.TURN_ERRORS_ON_PROMPT = 'Do you want to turn errors on?';
+        this.GENERIC_ERROR_MESSAGE = 'There was a problem, please try again.';
+
+        /**
+         * Supported attributes and their descriptions
+         */
+        this.SUPPORTED_ATTRIBUTES = {
+            price: 'Latest price, in fiat currency',
+            price_percent_change_1h: 'Price change over last 1h, as a percentage',
+            price_percent_change_24h: 'Price change over last 24h, as a percentage',
+            price_percent_change_7d: 'Price change over last 7d, as a percentage',
+            price_percent_change_30d: 'Price change over last 30d, as a percentage',
+            market_cap: 'Latest market capitalization, in fiat currency',
+            volume_24h: '24h trading volume, in fiat currency',
+            circulating_supply: 'Number of coins/tokens currently circulating',
+            total_supply: 'Total number of coins/tokens potentially available',
+            max_supply: 'Maximum number of coins/tokens that will ever be available (some coins do not have a max supply)',
+            fcas_score: 'Fundamental Crypto Asset Score (0-1000), a measure of the fundamental health of crypto projects (only the top 300-400 coins are rated)',
+            fcas_grade: 'FCAS Grade (S,A,B,C,E,F)',
+            fcas_grade_full: 'Full FCAS Grade description (Superb,Attractive,Basic,Caution,Fragile)',
+            fcas_percent_change_24h: '24h change in score',
+            fcas_point_change_24h: '24h change in score, as a percentage',
+            name: 'The cryptocurrency name',
+            description: 'Full description of the project.',
+            logo: 'The coin logo url (Tip: wrap this in the Google Sheets IMAGE function to show it in the cell)',
+            date_added: 'Date added to CoinMarketCap (effectively the date it started)',
+            year_added: 'Year added to CoinMarketCap',
+            tags: 'A comma seperated list of all tags',
+            tags_top_5: 'A comma seperated list of the first 5 tags',
+            url_website: 'Primary website for the project (if more than 1, only 1st returned)',
+            url_technical_doc: 'Whitepaper tech document for the project (if more than 1, only 1st returned)',
+            url_explorer: 'Blockchain explorer for the coin/token (if more than 1, only 1st returned)',
+            url_source_code: 'Project source code (github URL, if available)',
+        };
     }
 
     /**
      * Basic menu when no authorization has been given
      */
     addNoAuthMenu() {
-        this.Ui
-            .createAddonMenu()
-            .addItem( 'About', 'App.Menu.aboutSpoddyCoiner')
+        const ui = SpreadsheetApp.getUi();
+        ui.createAddonMenu()
+            .addItem( this.MENU_ABOUT_LABEL, `${this.app}.View.Menu.about` )
             .addToUi();
-    } 
+    }
+
+    /**
+     * Full SpoddyCoiner menu
+     */
+    addMenu() {
+        const ui = SpreadsheetApp.getUi();
+        ui.createAddonMenu()
+            .addItem( this.MENU_CMC_API_KEY_LABEL, `${this.app}.View.Menu.updateCMCApiKey` )
+            .addSubMenu( ui.createMenu( this.MENU_PREFERENCES_LABEL )
+                .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
+                .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
+                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
+                .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
+            .addSeparator()
+            .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
+                .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
+                .addItem( this.MENU_ATTRIBUTES_LABEL, `${this.app}.View.Menu.docsAttributes` ) )
+            .addItem( this.MENU_ABOUT_LABEL, `${this.app}.View.Menu.about` )
+            .addToUi();
+    }
+
+    /**
+     * 'CoinMarketCap API Key' menu item
+     */
+    updateCMCApiKey() {
+        const ui = SpreadsheetApp.getUi();
+        let apiKey = this.Model.GASProps.getAPIKey( true ); // masked
+        const promptLabel = ( apiKey === '' ) ? this.ENTER_API_KEY_PROMPT : `${this.CURRENT_KEY_LABEL} ${apiKey}\n\n${this.ENTER_API_KEY_PROMPT}`;
+        const result = ui.prompt(
+            this.MENU_CMC_API_KEY_LABEL,
+            promptLabel,
+            ui.ButtonSet.OK_CANCEL,
+        );
+        const button = result.getSelectedButton();
+        apiKey = result.getResponseText();
+        if ( button === ui.Button.OK ) {
+            if ( !this.Model.GASProps.setAPIKey( apiKey ) ) {
+                ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
+                return;
+            }
+            ui.alert( this.API_KEY_UPDATED_LABEL, ui.ButtonSet.OK );
+        }
+    }
+
+    /**
+     * 'API Cache Time' menu item
+     */
+    updateAPICacheTime() {
+        const ui = SpreadsheetApp.getUi();
+        const result = ui.prompt(
+            this.API_CACHE_TIME_HEADING,
+            this.API_CACHE_KEY_PROMPT,
+            ui.ButtonSet.OK_CANCEL,
+        );
+        const button = result.getSelectedButton();
+        const newTime = result.getResponseText();
+        if ( button === ui.Button.OK ) {
+            if ( !this.Model.GASProps.setCacheTime( newTime ) ) {
+                ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
+                return;
+            }
+            ui.alert(
+                this.API_CACHE_TIME_UPDATED_LABEL,
+                `${this.NEW_CACHE_TIME_LABEL} ${this.Model.GASProps.getCacheTime( true )}`,
+                ui.ButtonSet.OK,
+            );
+        }
+    }
+
+    /**
+     * 'Clear API Cache' menu item
+     */
+    clearAPICache() {
+        const ui = SpreadsheetApp.getUi();
+        let result = ui.alert(
+            `${this.Model.APICache.getNumItems()}${this.NUM_CACHE_ITEMS_LABEL}\n\n${this.CLEAR_CACHE_PROMPT}`,
+            ui.ButtonSet.YES_NO,
+        );
+        if ( result === ui.Button.YES ) {
+            if ( !this.Model.APICache.clear() ) {
+                ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
+                return;
+            }
+            result = ui.alert(
+                this.CACHE_CLEAR_UPDATE_FUNCTIONS_PROMPT,
+                ui.ButtonSet.YES_NO,
+            );
+            if ( result === ui.Button.YES ) {
+                this.Controller.handleRefreshAllFunctionsConfirm();
+            }
+        }
+    }
+
+    /**
+     * 'Default Currency' menu item
+     */
+    updateDefaultCurrency() {
+        const ui = SpreadsheetApp.getUi();
+        const result = ui.prompt(
+            `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`,
+            this.NEW_CURRENCY_CODE_HEADING,
+            ui.ButtonSet.OK_CANCEL,
+        );
+        const button = result.getSelectedButton();
+        const newCurrencyCode = result.getResponseText();
+        if ( button === ui.Button.CANCEL || button === ui.Button.CLOSE ) {
+            return;
+        }
+        if ( button === ui.Button.OK ) {
+            if ( !this.Model.GASProps.setDefaultCurrency( newCurrencyCode ) ) {
+                ui.alert( this.CURRENCY_CODE_NOT_VALID_LABEL, ui.ButtonSet.OK );
+                return;
+            }
+            ui.alert(
+                this.DEFAULT_CURRENCY_UPDATED_LABEL,
+                `${this.NEW_CURRENCY_LABEL} ${this.Model.GASProps.getDefaultCurrency()}`,
+                ui.ButtonSet.OK,
+            );
+        }
+    }
+
+    /**
+     * 'Show Errors' menu item
+     */
+    showErrors() {
+        const ui = SpreadsheetApp.getUi();
+        let prompt = this.TURN_ERRORS_ON_PROMPT;
+        if ( this.Model.GASProps.getDisplayErrorMessages() ) {
+            prompt = this.TURN_ERRORS_OFF_PROMPT;
+        }
+        const result = ui.alert( prompt, ui.ButtonSet.YES_NO );
+        if ( result === ui.Button.YES ) {
+            this.Model.GASProps.toggleErrorMessages();
+        }
+    }
+
+    /**
+     * 'Functions' menu item
+     */
+    docsFunctions() {
+        const ui = SpreadsheetApp.getUi();
+        ui.alert(
+            this.DOCS_FUNCTIONS_HEADING,
+            this.DOCS_FUNCTIONS_TEXT,
+            ui.ButtonSet.OK,
+        );
+    }
+
+    /**
+     * 'Supported Attributes' menu item
+     */
+    docsAttributes() {
+        const ui = SpreadsheetApp.getUi();
+        let supportedAttrs = '';
+        Object.entries( this.SUPPORTED_ATTRIBUTES ).forEach( ( [k, v] ) => {
+            supportedAttrs += `"${k}"\n ${v}\n\n`;
+        } );
+        const text = `${this.DOCS_ATTRIBUTES_TEXT}${supportedAttrs}`;
+        ui.alert( this.DOCS_ATTRIBUTES_HEADING, text, ui.ButtonSet.OK );
+    }
 
     /**
      * 'About' menu item
      */
-    aboutSpoddyCoiner() {
-        this.Ui.alert(
-            'Hello',
-            Constants.ABOUT_TEXT,
-            this.Ui.ButtonSet.OK,
+    about() {
+        const ui = SpreadsheetApp.getUi();
+        ui.alert(
+            this.ABOUT_HEADING,
+            this.ABOUT_TEXT,
+            ui.ButtonSet.OK,
         );
+    }
+}
+
+
+/**
+ * Spreadsheet display + interactions
+ */
+class Sheet {
+    constructor() {
+        /**
+         * SpoddyCoiner spreeadsheet functions
+         * these are defined in Addon_Functions.gs
+         */
+        this.FUNCTIONS = [
+            'SPODDYCOINER',
+            'SPODDYCOINER_CONVERT',
+        ];
+    }
+
+    /**
+     * Refresh all SpoddyCoiner functions on the active sheet
+     *
+     * https://tanaikech.github.io/2019/10/28/automatic-recalculation-of-custom-function-on-spreadsheet-part-2/
+     */
+    refreshAllFunctions() {
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const temp = Utilities.getUuid();
+        this.FUNCTIONS.forEach( ( e ) => {
+            ss.createTextFinder( `=${e}` )
+                .matchFormulaText( true )
+                .replaceAllWith( temp );
+            ss.createTextFinder( temp )
+                .matchFormulaText( true )
+                .replaceAllWith( `=${e}` );
+        } );
     }
 }
 
@@ -79,9 +1082,7 @@ class Menu {
  * SpoddyCoiner controller class
  */
 
-const App = new SpoddyCoiner(
-    new Menu(),
-);
+const App = new SpoddyCoiner( 'App' );
 
 /**
  * @OnlyCurrentDoc
@@ -98,7 +1099,7 @@ function onOpen( e ) {
         App.startNoAuth();
         return;
     }
-    App.startNoAuth();
+    App.start();
 }
 
 /**
@@ -113,4 +1114,39 @@ function onEdit( e ) {
  */
 function onSelectionChange( e ) {
     // stub atm
+}
+
+
+/**
+ * Returns coin price and other info from the CoinMarketCap API. Use the Addons -> SpoddyCoiner menu for more info.
+ *
+ * @param {"BTC"} coin          Coin ticker to lookup, default is BTC
+ * @param {"price"} attribute   Attribute to return, default is "price", see docs for full list
+ * @param {"GBP"} [fiat]        Fiat currency to return (ISO 4217), set default in SpoddyCoiner menu
+ * @return                      Latest data about a coin
+ * @customfunction
+ */
+function SPODDYCOINER( coin = 'BTC', attribute = 'price', fiat = App.Model.GASProps.getDefaultCurrency() ) {
+    return App.getCoinAttribute(
+        ( coin.toString() ) || '',
+        ( attribute.toString() ) || '',
+        ( fiat.toString() ) || '',
+    );
+}
+
+/**
+ * Uses the CoinMarketCap API to convert one crypto/curreny to another crypto/currency. Use the Addons -> SpoddyCoiner menu for more info.
+ *
+ * @param {0.00123456} amount   Amount to be converted
+ * @param {"BTC"} symbol        Coin/currency ticker, default is BTC
+ * @param {"GBP"} [convert]     Coin/currency ticker to convert to, set default in SpoddyCoiner menu
+ * @return                      Converted amount
+ * @customfunction
+ */
+function SPODDYCOINER_CONVERT( amount, symbol = 'BTC', convert = App.Model.GASProps.getDefaultCurrency() ) {
+    return App.convert(
+        ( parseFloat( amount ) ) || 0,
+        ( symbol.toString() ) || '',
+        ( convert.toString() ) || '',
+    );
 }
