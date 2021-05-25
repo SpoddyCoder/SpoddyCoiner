@@ -1,4 +1,5 @@
 node_modules/*
 dist/appsscript.json
 dist/Tests.js
+.clasp.json
 scratch.js
