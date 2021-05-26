@@ -7,7 +7,6 @@ module.exports = {
     output: {
         filename: '[name]',
         path: path.resolve( __dirname, 'dist' ),
-        clean: true,
     },
     optimization: {
         minimize: false,

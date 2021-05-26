@@ -5,8 +5,11 @@
 /**
  * Dev testing inside the GAS Editor
  */
-function logCacheKeys() {
-    App.Model.APICache.logCacheKeys();
+function debug() {
+    Logger.log( `Cache key prefix: ${App.Model.APICache.prefixKey( '' )}` );
+}
+function bustCache() {
+    App.Model.APICache.clear();
 }
 // BTC
 function priceBTC() {

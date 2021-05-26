@@ -175,7 +175,7 @@ class Menu {
         const ui = SpreadsheetApp.getUi();
         let result = ui.alert(
             this.MENU_CLEAR_CACHE_LABEL,
-            `${this.SpoddyCoiner.Model.APICache.getNumItems()}${this.NUM_CACHE_ITEMS_LABEL}\n\n${this.CLEAR_CACHE_PROMPT}`,
+            this.CLEAR_CACHE_PROMPT,
             ui.ButtonSet.YES_NO,
         );
         if ( result === ui.Button.YES ) {

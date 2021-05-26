@@ -15,7 +15,7 @@ class CMC {
      * @param {string} coin         the coin ticker
      * @param {string} attribute    the attribute to get
      * @param {string} [fiat]       fiat to return the value in (required for some attributes)
-     * @return {string|number}      the value of the attribute
+     * @returns {string|number}     the value of the attribute
      */
     getCoinAttribute( coin, attribute, fiat ) {
         let coinData = {};
@@ -137,7 +137,7 @@ class CMC {
      * @param {number} amount       the amount to convert
      * @param {string} symbol       the coin/currency ticker to convert from
      * @param {string} convert      the coin/currnecy ticker to convert to
-     * @return {number}             the converted value
+     * @returns {number}            the converted value
      */
     convert( amount, symbol, convert ) {
         const conversionData = this.SpoddyCoiner.Model.CMCApi.priceConversion(
@@ -157,7 +157,7 @@ class CMC {
     /**
      * Determine if a curency code is valid
      * @param {string} currencyCode     the currency code to check
-     * @return {boolean}                is valid ISO-4217 country code
+     * @returns {boolean}               is valid ISO-4217 country code
      */
     currencyCodeIsValid( currencyCode ) {
         const currencyCodeToCheck = currencyCode.toString() || '';

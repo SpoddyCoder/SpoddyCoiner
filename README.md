@@ -43,6 +43,8 @@ These work just like any standard function in Google Sheets...
 4. Enter the API Key in the Google Sheets addon menu (Addons -> SpoddyCoiner -> CoinMarketCap API -> API Key)
 5. Tap the SpoddyCoiner function into a cell, you'll get a tooltip with more info: `=SPODDYCOINER(`
 6. See the SpoddyCoiner Addon menu for further help and preferences (Addons -> SpoddyCoiner)
+7. Error messages are shown in the cell, but this can be turned off in the preferences
+8. `symbol` is interchangeable for `coin` in error messages
 
 
 ### Examples
@@ -78,7 +80,9 @@ The `SPODDYCOINER` function supports the following `attributes`...
 * `fcas_percent_change_24h` - 24h change in FCAS score as a percentage
 * `name` - coin name
 * `description` - full description of the project, history and purpose
-* `logo` - logo url (Tip: wrap this in the Google Sheets `IMAGE` function to show it in the cell, eg: `=IMAGE(SPODDYCOINER("BTC", "logo"))`)
+* `logo` - logo url
+    * Tip: wrap this in the Google Sheets `IMAGE` function to show it in the cell
+    * eg: `=IMAGE(SPODDYCOINER("BTC", "logo"))`
 * `date_added` - date added to CoinMarketCap (effectively the date it started)
 * `year_added` - year added to CoinMarketCap
 * `tags` - comma seperated list of all tags

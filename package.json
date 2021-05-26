@@ -7,11 +7,12 @@
         "test": "test"
     },
     "scripts": {
-        "publish": "npm run test && webpack --config webpack.prod.js && npm run postbuild && npm run deploy",
+        "publish": "webpack --config webpack.prod.js && npm run gas-sanitize-prod",
         "deploy": "clasp push",
-        "build": "webpack --config webpack.dev.js && npm run postbuild",
+        "build": "webpack --config webpack.dev.js && npm run gas-sanitize-dev",
         "__custom_build__": "a little gentle sed because exports & require statements cannot work in the deployed AppsScript environment...and yes i tried a webpack loader plugin to sort this but failed",
-        "postbuild": "sed -i '/^module\\.exports/d; /^exports\\./d; /require(/d; /eslint-disable/d;' dist/Code.js && rm -f ./dist/main && cp ./gas/appsscript.json ./dist/",
+        "gas-sanitize-dev": "sed -i '/^module\\.exports/d; /^exports\\./d; /require(/d; /eslint-disable/d;' gas/Code.js && rm -f ./gas/main",
+        "gas-sanitize-prod": "sed -i '/^module\\.exports/d; /^exports\\./d; /require(/d; /eslint-disable/d;' dist/Code.js && rm -f ./dist/main",
         "test": "mocha"
     },
     "repository": {

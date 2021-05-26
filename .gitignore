@@ -1,9 +1,10 @@
-# track only the build
+# dist should only ever contain the composited Code.js
 dist/*
 !dist/Code.js
 
-# push to your own script
+# push to your own GAS id
 .clasp.json
+gas/appsscript.json
 
 # heavier than the sun
 node_modules/*

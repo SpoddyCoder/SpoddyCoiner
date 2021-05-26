@@ -11,14 +11,9 @@ class APICache {
         this.SpoddyCoiner = spoddycoiner;
 
         /**
-         * Cache time in seconds
+         * max cache time in seconds
          */
         this.MAX_CACHE_TIME = 21600;
-
-        /**
-         * The cache key for the Cache Keys Tracker
-         */
-        this.CACHE_KEYS = 'cache_keys';
 
         /**
          * GAS user cache service
@@ -31,16 +26,13 @@ class APICache {
      *
      * @param {string} key  key name
      * @param {string} obj  object/string to store
-     * @return {boolean}    succesfully added
+     * @returns {boolean}   succesfully added
      */
     put( key, obj ) {
         const prefixedKey = this.prefixKey( key );
         let returnObj = obj;
         if ( typeof ( obj ) !== 'string' ) {
             returnObj = JSON.stringify( obj );
-        }
-        if ( key !== this.CACHE_KEYS ) {
-            this.addToCacheKeysTracker( prefixedKey );
         }
         return this.userCache.put(
             prefixedKey,
@@ -52,8 +44,8 @@ class APICache {
     /**
      * Get String or JSON object from cache by key name
      *
-     * @param {string} key      key name
-     * @return {object|string}  the JSON object/string/null
+     * @param {string} key          key name
+     * @returns {object|string}     the JSON object/string/null
      */
     get( key ) {
         const prefixedKey = this.prefixKey( key );
@@ -61,78 +53,36 @@ class APICache {
         let returnObj = obj;
         if ( obj !== null ) {
             // object in the cache
-            if ( key !== this.CACHE_KEYS ) {
-                // add it to cache_keys if not already (possible for these to become disconnected)
-                this.addToCacheKeysTracker( prefixedKey );
-            }
             try {
                 returnObj = JSON.parse( obj );
             } catch ( e ) {
                 return returnObj; // string
             }
         }
-        // init the cache_keys tracker when it's needed (can expire outside the scope of the script)
-        if ( key === this.CACHE_KEYS && obj === null ) {
-            this.put( this.CACHE_KEYS, [] );
-            return [];
-        }
         return returnObj; // object or null
     }
 
     /**
-     * Prefix all cache keys with VERSION to facilitate invalidation
+     * Prefix all cache keys with VERSION & GASProps.CACHE_BUST_PREFIX to facilitate invalidation
      *
      * @param {string} key  the base key name to apply prefix
-     * @return {string}     the prefixed key name
+     * @returns {string}    the prefixed key name
      */
     prefixKey( key ) {
-        if ( key.includes( `${this.SpoddyCoiner.VERSION}_` ) ) {
+        const prefix = `${this.SpoddyCoiner.VERSION}.${this.SpoddyCoiner.Model.GASProps.getCacheBustPrefix()}_`;
+        if ( key.includes( prefix ) ) {
             return key;
         }
-        return `${this.SpoddyCoiner.VERSION}_${key}`;
+        return `${prefix}${key}`;
     }
 
     /**
-     * Clear the cache, using our cache_keys tracker
+     * Clear the cache by incrementing the GASProps.CACHE_BUST_PREFIX
      *
-     * @return {boolean}    cleared OK
+     * @returns {boolean}   cleared OK
      */
     clear() {
-        const cacheKeys = this.get( this.CACHE_KEYS );
-        if ( cacheKeys ) {
-            this.userCache.removeAll( cacheKeys );
-            this.put( this.CACHE_KEYS, [] );
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Get number of items stored in cache
-     *
-     * @return {number}     the number of items currently cached
-     */
-    getNumItems() {
-        return this.get( this.CACHE_KEYS ).length;
-    }
-
-    /**
-     * Add key to "cache_keys" tracker array
-     *
-     * @param {string} key  key name
-     * @return {boolean}    was added, true|false
-     */
-    addToCacheKeysTracker( key ) {
-        const cacheKeys = this.get( this.CACHE_KEYS );
-        if ( cacheKeys.indexOf( key ) === -1 ) {
-            cacheKeys.push( key );
-            return this.put( this.CACHE_KEYS, cacheKeys );
-        }
-        return false;
-    }
-
-    logCacheKeys() {
-        Logger.log( this.get( this.CACHE_KEYS ) );
+        return this.SpoddyCoiner.Model.GASProps.incrementCacheBustPrefix();
     }
 }
 

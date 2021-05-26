@@ -5,12 +5,19 @@ Breaking changes between versions will be highligted.
 
 ## [1.2.0] - In Progress
 
-* Improved: modernised codebase for local IDE development
-    * NPM + Webpack + Eslint (airbnb) + Mocha + Chai
-    * Clasp deployment
 * Improved: menu layout
-* Fixed: RestCountries bug breaking install
-* Fixed: Props bug stopping API key error from showing
+* Improved: cache handling
+* Improved: removed user Session usage
+    * was used to lookup their current locale & set their default currency
+    * default currency on first install therefore becomes 'USD'
+    * reduces required permissions, increases user privacy
+* Improved: removed RestCountries API currency code lookup (now covered by CMC API)
+* Improved: modernised codebase for improved deveoper workflow
+    * NPM + Webpack + eslint (airbnb)
+    * clasp deployment
+    * rebuild using ES6 classes
+* Fixed: bug in RestCountries, breaking install
+* Fixed: props bug stopping API key error from showing
 
 ## [1.1.0] - 2021-05-16
 

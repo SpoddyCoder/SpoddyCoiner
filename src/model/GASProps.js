@@ -23,6 +23,7 @@ class GASProps {
         this.DEFAULT_CURRENCY_KEY = 'default_currency';
         this.API_CACHE_TIME_KEY = 'api_cache_time';
         this.DISPLAY_ERROR_MESSAGES_KEY = 'display_error_messages';
+        this.CACHE_BUST_PREFIX = 'cache_bust_prefix';
 
         /**
          * GAS Properties Services
@@ -36,7 +37,7 @@ class GASProps {
      * if not defined set it ""
      *
      * @param {boolean} masked  mask all but the first and last letter
-     * @return {string}         api key
+     * @returns {string}        api key
      */
     getAPIKey( masked = false ) {
         let apiKey = this.userProps.getProperty( this.CMC_API_KEY_KEY );
@@ -53,7 +54,7 @@ class GASProps {
     /**
      * Set API Key in user props
      *
-     * @return {boolean}    was updated
+     * @returns {boolean}   was updated
      */
     setAPIKey( newApiKey ) {
         if ( typeof ( newApiKey ) !== 'string' ) {
@@ -70,7 +71,7 @@ class GASProps {
      * Get default currency from user props
      * if not defined set it currency looked up from users locale
      *
-     * @return {string}     currency code
+     * @returns {string}    currency code
      */
     getDefaultCurrency() {
         let currency = this.userProps.getProperty( this.DEFAULT_CURRENCY_KEY );
@@ -84,7 +85,7 @@ class GASProps {
     /**
      * Set default currency in user props
      *
-     * @return {boolean}    was updated
+     * @returns {boolean}   was updated
      */
     setDefaultCurrency( newCurrencyCode ) {
         if ( typeof ( newCurrencyCode ) !== 'string' ) {
@@ -105,10 +106,10 @@ class GASProps {
      * if not defined set it to default value
      *
      * @param {boolean} humanReadable   return value in seconds or a human readable string
-     * @return {mixed}                  cache time in seconds or h/m/s
+     * @returns {mixed}                 cache time in seconds or h/m/s
      */
     getCacheTime( humanReadable = false ) {
-        let cacheTime = parseInt( this.docProps.getProperty( this.API_CACHE_TIME_KEY ), 10 );
+        let cacheTime = parseFloat( this.docProps.getProperty( this.API_CACHE_TIME_KEY ) );
         if ( cacheTime.isNaN ) {
             cacheTime = this.DEFAULT_CACHE_TIME;
             this.docProps.setProperty( this.API_CACHE_TIME_KEY, cacheTime );
@@ -135,10 +136,10 @@ class GASProps {
     /**
      * Set cache time (in seconds) in document props
      *
-     * @return {boolean}    was updated
+     * @returns {boolean}   was updated
      */
     setCacheTime( time ) {
-        let newTime = parseInt( time, 10 );
+        let newTime = parseFloat( time );
         if ( newTime.isNaN ) {
             return false;
         }
@@ -157,7 +158,7 @@ class GASProps {
      * if not defined set it to On
      *
      * @param {boolean} humanReadable   return value as boolean or human readable string
-     * @return {boolean}                was updated
+     * @returns {boolean}               was updated
      */
     getDisplayErrorMessages( humanReadable = false ) {
         let errMsgs = this.docProps.getProperty( this.DISPLAY_ERROR_MESSAGES_KEY );
@@ -175,7 +176,7 @@ class GASProps {
     /**
      * Toggle Error Messages
      *
-     * @return {boolean}    was updated
+     * @returns {boolean}   was updated
      */
     toggleErrorMessages() {
         let dispErrMsgs = this.getDisplayErrorMessages();
@@ -185,6 +186,35 @@ class GASProps {
         }
         this.SpoddyCoiner.handleDisplayErrorMessagesChange( dispErrMsgs );
         return true;
+    }
+
+    /**
+     * Get cache bust prefix from document props
+     * if not defined set it to 1
+     *
+     * @returns {number}
+     */
+    getCacheBustPrefix() {
+        let prefix = parseFloat( this.docProps.getProperty( this.CACHE_BUST_PREFIX ) );
+        if ( prefix.isNaN ) {
+            prefix = 1;
+            this.docProps.setProperty( this.CACHE_BUST_PREFIX, prefix );
+        }
+        return prefix;
+    }
+
+    /**
+     * Increment cache bust prefix by 1
+     *
+     * @returns {boolean}
+     */
+    incrementCacheBustPrefix() {
+        let prefix = this.getCacheBustPrefix();
+        prefix += 1;
+        if ( prefix > 99 ) {
+            prefix = 1; // stop this increment from slowly eating bytes in the user objects
+        }
+        return this.docProps.setProperty( this.CACHE_BUST_PREFIX, prefix );
     }
 }
 

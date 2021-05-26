@@ -43,7 +43,7 @@ class CMCApi {
      * Make an API call to CRYPTOCURRENCY_METADATA
      *
      * @param {string} slug     the CMC crypto slug
-     * @return {object}         JSON Object
+     * @returns {object}        JSON Object
      */
     getCryptoMetadata( symbol ) {
         const query = `symbol=${symbol.toUpperCase()}`;
@@ -55,7 +55,7 @@ class CMCApi {
      *
      * @param {string} symbol   the crypto symbol
      * @param {string} fiat     fiat currency to use for the lookup
-     * @return {object}         JSON Object
+     * @returns {object}        JSON Object
      */
     getCryptoQuoteLatest( symbol, fiat ) {
         const query = `symbol=${symbol.toUpperCase()}&convert=${fiat.toUpperCase()}`;
@@ -66,7 +66,7 @@ class CMCApi {
      * Make an API call to PARTNERS_FCAS_QUOTES_LATEST
      *
      * @param {string} slug     the crypto symbol
-     * @return {object}         JSON Object
+     * @returns {object}        JSON Object
      */
     getFCASQuoteLatest( symbol ) {
         const query = `symbol=${symbol.toUpperCase()}`;
@@ -84,7 +84,7 @@ class CMCApi {
      * @param {number} amount   the amount to convert
      * @param {string} symbol   the coin/currency to convert from
      * @param {string} convert  the coin/currnecy to convert to
-     * @return {Object}         JSON Object
+     * @returns {Object}        JSON Object
      */
     priceConversion( amount, symbol, convert ) {
         const query = `amount=${amount}&symbol=${symbol.toUpperCase()}&convert=${convert.toUpperCase()}`;
@@ -94,7 +94,7 @@ class CMCApi {
     /**
      * Make an API call to FIAT_MAP
      *
-     * @return {Object}         JSON Object
+     * @returns {Object}        JSON Object
      */
     getFiatMap() {
         const query = 'start=1&limit=1000'; // all listed fiats
@@ -107,7 +107,7 @@ class CMCApi {
      *
      * @param {string} endpoint     CMC query endpoint
      * @param {string} query        query to run (not including the API key)
-     * @return {object}             JSON Object, "error_message" value is empty if no error occurred
+     * @returns {object}            JSON Object, "error_message" value is empty if no error occurred
      */
     call( endpoint, query ) {
         const fullQuery = `${endpoint}?${query}`;
