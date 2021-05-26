@@ -22,6 +22,8 @@ class Menu {
         this.MENU_ABOUT_LABEL = 'About';
         this.MENU_CMC_API_KEY_LABEL = 'CoinMarketCap API Key';
         this.MENU_PREFERENCES_LABEL = 'Preferences';
+        this.MENU_TOOLS_LABEL = 'Tools';
+        this.MENU_REFRESH_ALL_FUNCTIONS_LABEL = 'Refresh All Functions';
         this.MENU_DEFAULT_CURRENCY_LABEL = 'Default Currency:';
         this.MENU_CACHE_TIME_LABEL = 'Cache Time:';
         this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
@@ -48,7 +50,9 @@ class Menu {
         this.NEW_CACHE_TIME_LABEL = 'New cache time :';
         this.NUM_CACHE_ITEMS_LABEL = ' API calls currently cached';
         this.CLEAR_CACHE_PROMPT = 'Do you want to reset the API cache?';
-        this.CACHE_CLEAR_UPDATE_FUNCTIONS_PROMPT = 'API cache cleared.\n\nDo you want to re-run all the SPODDYCOINER functions on the active sheet?';
+        this.API_CACHE_CLEARED_LABEL = 'API cache cleared.';
+        this.REFRESH_ALL_FUNCTIONS_NOTE = 'NB: this does not clear the cache.';
+        this.REFRESH_ALL_FUNCTIONS_PROMPT = 'Do you want to re-run all the SPODDYCOINER functions on the active sheet?';
         this.NEW_CURRENCY_CODE_HEADING = 'Enter new 3 letter currency code (ISO 4217)';
         this.DEFAULT_CURRENCY_UPDATED_LABEL = 'Default Currency Updated';
         this.NEW_CURRENCY_LABEL = 'New currency code :';
@@ -107,10 +111,12 @@ class Menu {
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
             .addItem( this.MENU_CMC_API_KEY_LABEL, `${this.app}.View.Menu.updateCMCApiKey` )
+            .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
+                .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
+                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` ) )
             .addSubMenu( ui.createMenu( this.MENU_PREFERENCES_LABEL )
                 .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
                 .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
-                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
                 .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
@@ -139,7 +145,7 @@ class Menu {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
-            ui.alert( this.API_KEY_UPDATED_LABEL, ui.ButtonSet.OK );
+            this.promptRefreshAllFunctions( this.API_KEY_UPDATED_LABEL );
         }
     }
 
@@ -173,7 +179,7 @@ class Menu {
      */
     clearAPICache() {
         const ui = SpreadsheetApp.getUi();
-        let result = ui.alert(
+        const result = ui.alert(
             this.MENU_CLEAR_CACHE_LABEL,
             this.CLEAR_CACHE_PROMPT,
             ui.ButtonSet.YES_NO,
@@ -183,13 +189,7 @@ class Menu {
                 ui.alert( this.GENERIC_ERROR_MESSAGE, ui.ButtonSet.OK );
                 return;
             }
-            result = ui.alert(
-                this.CACHE_CLEAR_UPDATE_FUNCTIONS_PROMPT,
-                ui.ButtonSet.YES_NO,
-            );
-            if ( result === ui.Button.YES ) {
-                this.SpoddyCoiner.handleRefreshAllFunctionsConfirm();
-            }
+            this.promptRefreshAllFunctions( this.API_CACHE_CLEARED_LABEL );
         }
     }
 
@@ -213,10 +213,9 @@ class Menu {
                 ui.alert( this.CURRENCY_CODE_NOT_VALID_LABEL, ui.ButtonSet.OK );
                 return;
             }
-            ui.alert(
-                this.DEFAULT_CURRENCY_UPDATED_LABEL,
+            this.promptRefreshAllFunctions(
+                `${this.DEFAULT_CURRENCY_UPDATED_LABEL}`,
                 `${this.NEW_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`,
-                ui.ButtonSet.OK,
             );
         }
     }
@@ -237,6 +236,9 @@ class Menu {
         );
         if ( result === ui.Button.YES ) {
             this.SpoddyCoiner.Model.GASProps.toggleErrorMessages();
+            this.promptRefreshAllFunctions(
+                `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`,
+            );
         }
     }
 
@@ -275,6 +277,38 @@ class Menu {
             this.ABOUT_TEXT,
             ui.ButtonSet.OK,
         );
+    }
+
+    /**
+     * 'Refresh all functions' menu item
+     */
+    refreshCustomFunctions() {
+        this.promptRefreshAllFunctions(
+            this.MENU_REFRESH_ALL_FUNCTIONS_LABEL,
+            this.REFRESH_ALL_FUNCTIONS_NOTE,
+        );
+    }
+
+    /**
+     * Refresh all SPODDYCOINER functions dialogue
+     *
+     * @param {string} title    title text
+     * @param {string} text     additional text above the update functions prompt
+     * @returns {boolean}       confirmed OK
+     */
+    promptRefreshAllFunctions( title = '', text = '' ) {
+        const ui = SpreadsheetApp.getUi();
+        const confirmText = ( text !== '' ) ? `${text}\n\n${this.REFRESH_ALL_FUNCTIONS_PROMPT}` : this.REFRESH_ALL_FUNCTIONS_PROMPT;
+        const result = ui.alert(
+            title,
+            confirmText,
+            ui.ButtonSet.YES_NO,
+        );
+        if ( result === ui.Button.YES ) {
+            this.SpoddyCoiner.handleRefreshAllFunctionsConfirm();
+            return true;
+        }
+        return false;
     }
 }
 

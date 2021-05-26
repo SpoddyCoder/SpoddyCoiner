@@ -28,7 +28,7 @@ class CMCApi {
         this.KEY_INFO = '/v1/key/info';
 
         /**
-         * FCAS Grades
+         * FCAS Grades lookup
          */
         this.FCAS_GRADES = {
             S: 'Superb',

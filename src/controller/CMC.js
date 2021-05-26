@@ -12,6 +12,8 @@ class CMC {
     }
 
     /**
+     * Get a coin attribute from the Cache or CMC API
+     *
      * @param {string} coin         the coin ticker
      * @param {string} attribute    the attribute to get
      * @param {string} [fiat]       fiat to return the value in (required for some attributes)
@@ -134,6 +136,8 @@ class CMC {
     }
 
     /**
+     * Converst a coin/currency amount to another
+     *
      * @param {number} amount       the amount to convert
      * @param {string} symbol       the coin/currency ticker to convert from
      * @param {string} convert      the coin/currnecy ticker to convert to
@@ -155,7 +159,8 @@ class CMC {
     }
 
     /**
-     * Determine if a curency code is valid
+     * Determine if a curency code is a valid ISO-4217 currency code
+     *
      * @param {string} currencyCode     the currency code to check
      * @returns {boolean}               is valid ISO-4217 country code
      */

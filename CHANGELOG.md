@@ -5,14 +5,14 @@ Breaking changes between versions will be highligted.
 
 ## [1.2.0] - In Progress
 
-* Improved: menu layout
+* Improved: menu layout, added tools menu + some new tools
 * Improved: cache handling
 * Improved: removed user Session usage
-    * was used to lookup their current locale & set their default currency
+    * was used to lookup users current locale & set their default currency
     * default currency on first install therefore becomes 'USD'
     * reduces required permissions, increases user privacy
 * Improved: removed RestCountries API currency code lookup (now covered by CMC API)
-* Improved: modernised codebase for improved deveoper workflow
+* Improved: modernised codebase for improved developer workflow
     * NPM + Webpack + eslint (airbnb)
     * clasp deployment
     * rebuild using ES6 classes

@@ -22,7 +22,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.75';
+        this.VERSION = '1.2.0.77';
 
         /**
          * a loose MVC pattern
@@ -47,7 +47,6 @@ class SpoddyCoiner {
      */
     handleApiKeyChange() {
         this.View.Menu.addMenu();
-        this.View.Sheet.refreshAllFunctions();
     }
 
     handleCacheTimeChange() {
@@ -56,12 +55,10 @@ class SpoddyCoiner {
 
     handleDefaultCurrencyChange() {
         this.View.Menu.addMenu();
-        this.View.Sheet.refreshAllFunctions();
     }
 
     handleDisplayErrorMessagesChange() {
         this.View.Menu.addMenu();
-        this.View.Sheet.refreshAllFunctions();
     }
 
     /**

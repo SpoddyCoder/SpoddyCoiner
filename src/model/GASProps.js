@@ -19,8 +19,10 @@ class GASProps {
         /**
          * Property key names
          */
+        // userProps
         this.CMC_API_KEY_KEY = 'cmc_api_key';
         this.DEFAULT_CURRENCY_KEY = 'default_currency';
+        // docProps
         this.API_CACHE_TIME_KEY = 'api_cache_time';
         this.DISPLAY_ERROR_MESSAGES_KEY = 'display_error_messages';
         this.CACHE_BUST_PREFIX = 'cache_bust_prefix';
