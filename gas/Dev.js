@@ -6,10 +6,16 @@
  * Dev testing inside the GAS Editor
  */
 function debug() {
+    Logger.log( `${App.View.Menu.ABOUT_HEADING}` );
+    Logger.log( `Default Currrency: ${App.Model.GASProps.getDefaultCurrency()}` );
     Logger.log( `Cache key prefix: ${App.Model.APICache.prefixKey( '' )}` );
+    Logger.log( `Active Cells: ${App.View.Sheet.getActiveCells()}` );
 }
 function bustCache() {
     App.Model.APICache.clear();
+}
+function convertCellsToValues() {
+    App.View.Sheet.convertCellsToValues();
 }
 // BTC
 function priceBTC() {
@@ -48,6 +54,6 @@ function priceXMR() {
 function volumeXMR() {
     SPODDYCOINER( 'XMR', 'volume_24h' );
 }
-function testXMmaxSupplyXMR() {
+function maxSupplyXMR() {
     SPODDYCOINER( 'XMR', 'max_supply' );
 }

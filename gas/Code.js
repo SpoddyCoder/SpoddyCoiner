@@ -3,20 +3,20 @@ class SpoddyCoiner {
     /**
      * SpoddyCoiner Addon primary controller
      *
-     * @param {string} instanceName     the variable name of the SpoddyCoiner instance
+     * @param {string} instanceName     var name of SpoddyCoiner instance (must be in global scope)
      */
     constructor( instanceName ) {
+        /**
+         * Addon Name + Version
+         */
+        this.ADDON_NAME = 'SpoddyCoiner';
+        this.VERSION = '1.2.0.86';
+
         /**
          * the cost of AppsScript menu bindings
          * addMenuItem() functionName's must be the string name of a function in the global scope
          */
         this.instanceName = instanceName;
-
-        /**
-         * Addon Name + Version
-         */
-        this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.77';
 
         /**
          * a loose MVC pattern
@@ -38,6 +38,8 @@ class SpoddyCoiner {
     /**
      * Model change handlers
      * update the View as props change
+     *
+     * TODO: the C should bind these to the M's & C's
      */
     handleApiKeyChange() {
         this.View.Menu.addMenu();
@@ -58,8 +60,12 @@ class SpoddyCoiner {
     /**
      * View event handlers
      */
-    handleRefreshAllFunctionsConfirm() {
+    handleConfirmRefreshAllFunctions() {
         this.View.Sheet.refreshAllFunctions();
+    }
+
+    handleConfirmConvertCellsToValues() {
+        this.View.Sheet.convertCellsToValues();
     }
 }
 
@@ -760,9 +766,10 @@ class Menu {
         this.MENU_PREFERENCES_LABEL = 'Preferences';
         this.MENU_TOOLS_LABEL = 'Tools';
         this.MENU_REFRESH_ALL_FUNCTIONS_LABEL = 'Refresh All Functions';
+        this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
+        this.MENU_CONVERT_CELL_TO_VALUE = 'Convert Cells To Values';
         this.MENU_DEFAULT_CURRENCY_LABEL = 'Default Currency:';
         this.MENU_CACHE_TIME_LABEL = 'Cache Time:';
-        this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
         this.MENU_SHOW_ERRORS_LABEL = 'Show Errors:';
         this.MENU_DOCS_LABEL = 'Docs';
         this.MENU_FUNCTIONS_LABEL = 'Functions';
@@ -795,6 +802,9 @@ class Menu {
         this.CURRENCY_CODE_NOT_VALID_LABEL = 'Currency code was not valid!';
         this.TURN_ERRORS_OFF_PROMPT = 'Do you want to turn errors off?';
         this.TURN_ERRORS_ON_PROMPT = 'Do you want to turn errors on?';
+        this.CONVERT_CELL_TO_VALUE_CELLS_LABEL = 'Do you want to convert the selected cell(s)...\n\n';
+        this.CONVERT_CELL_TO_VALUE_PROMPT = '\n...to value(s)?';
+        this.CONVERT_CELL_TO_VALUE_NOTE = 'This converts SPODDYCOINER functions in the selected cell(s) to the static value the cell currently contains (which means they will no longer be updated).';
         this.GENERIC_ERROR_MESSAGE = 'There was a problem, please try again.';
 
         /**
@@ -847,13 +857,14 @@ class Menu {
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
             .addItem( this.MENU_CMC_API_KEY_LABEL, `${this.app}.View.Menu.updateCMCApiKey` )
-            .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
-                .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
-                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` ) )
             .addSubMenu( ui.createMenu( this.MENU_PREFERENCES_LABEL )
                 .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
                 .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
                 .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
+            .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
+                .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
+                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
+                .addItem( this.MENU_CONVERT_CELL_TO_VALUE, `${this.app}.View.Menu.convertCellsToValues` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
                 .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
@@ -1016,13 +1027,28 @@ class Menu {
     }
 
     /**
-     * 'Refresh all functions' menu item
+     * 'Refresh All Functions' menu item
      */
     refreshCustomFunctions() {
         this.promptRefreshAllFunctions(
             this.MENU_REFRESH_ALL_FUNCTIONS_LABEL,
             this.REFRESH_ALL_FUNCTIONS_NOTE,
         );
+    }
+
+    /**
+     * `Convert Cells To Values` menu item
+     */
+    convertCellsToValues() {
+        const ui = SpreadsheetApp.getUi();
+        const result = ui.alert(
+            this.MENU_CONVERT_CELL_TO_VALUE,
+            `${this.CONVERT_CELL_TO_VALUE_NOTE}\n\n${this.CONVERT_CELL_TO_VALUE_CELLS_LABEL} ${this.SpoddyCoiner.View.Sheet.getActiveCells()}\n${this.CONVERT_CELL_TO_VALUE_PROMPT}`,
+            ui.ButtonSet.YES_NO,
+        );
+        if ( result === ui.Button.YES ) {
+            this.SpoddyCoiner.handleConfirmConvertCellsToValues();
+        }
     }
 
     /**
@@ -1041,7 +1067,7 @@ class Menu {
             ui.ButtonSet.YES_NO,
         );
         if ( result === ui.Button.YES ) {
-            this.SpoddyCoiner.handleRefreshAllFunctionsConfirm();
+            this.SpoddyCoiner.handleConfirmRefreshAllFunctions();
             return true;
         }
         return false;
@@ -1063,30 +1089,64 @@ class Sheet {
 
         /**
          * SpoddyCoiner spreeadsheet functions
-         * these are defined in Addon_Functions.gs
+         * these are defined in Custom_Functions.js
          */
         this.FUNCTIONS = [
             'SPODDYCOINER',
             'SPODDYCOINER_CONVERT',
         ];
+        this.FUNCTIONS_SEARCH_TERM = '=SPODDYCOINER';
+
+        /**
+         * Active sheet
+         */
+        this.spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     }
 
     /**
-     * Refresh all SpoddyCoiner functions on the active sheet
+     * Refresh all SPODDYCOINER functions on the active sheet
      *
      * https://tanaikech.github.io/2019/10/28/automatic-recalculation-of-custom-function-on-spreadsheet-part-2/
      */
     refreshAllFunctions() {
-        const ss = SpreadsheetApp.getActiveSpreadsheet();
         const temp = Utilities.getUuid();
         this.FUNCTIONS.forEach( ( e ) => {
-            ss.createTextFinder( `=${e}` )
+            this.spreadsheet.createTextFinder( `=${e}` )
                 .matchFormulaText( true )
                 .replaceAllWith( temp );
-            ss.createTextFinder( temp )
+            this.spreadsheet.createTextFinder( temp )
                 .matchFormulaText( true )
                 .replaceAllWith( `=${e}` );
         } );
+    }
+
+    /**
+     * Convert cells containing any "=SPODDYCOINER" functions to their static value
+     *
+     * NB: this is just an includes() check
+     * so will match functions that contain the SPODDYCOINER functions
+     * this may or may not be desirable TODO: add option?
+     */
+    convertCellsToValues() {
+        const cells = this.spreadsheet.getActiveRange();
+        const values = cells.getValues();
+        const formulas = cells.getFormulas();
+
+        const replacementValues = [];
+        formulas.forEach( ( formulasRow, formulasRowIndex ) => {
+            const newRow = [];
+            formulasRow.forEach( ( formula, formulasColumnIndex ) => {
+                const value = values[formulasRowIndex][formulasColumnIndex];
+                const finalValue = ( formula.includes( this.FUNCTIONS_SEARCH_TERM ) || formula === '' ) ? value : formula;
+                newRow.push( finalValue );
+            } );
+            replacementValues.push( newRow );
+        } );
+        cells.setValues( replacementValues );
+    }
+
+    getActiveCells() {
+        return this.spreadsheet.getActiveRange().getA1Notation();
     }
 }
 

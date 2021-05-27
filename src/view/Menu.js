@@ -24,9 +24,10 @@ class Menu {
         this.MENU_PREFERENCES_LABEL = 'Preferences';
         this.MENU_TOOLS_LABEL = 'Tools';
         this.MENU_REFRESH_ALL_FUNCTIONS_LABEL = 'Refresh All Functions';
+        this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
+        this.MENU_CONVERT_CELL_TO_VALUE = 'Convert Cells To Values';
         this.MENU_DEFAULT_CURRENCY_LABEL = 'Default Currency:';
         this.MENU_CACHE_TIME_LABEL = 'Cache Time:';
-        this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
         this.MENU_SHOW_ERRORS_LABEL = 'Show Errors:';
         this.MENU_DOCS_LABEL = 'Docs';
         this.MENU_FUNCTIONS_LABEL = 'Functions';
@@ -59,6 +60,9 @@ class Menu {
         this.CURRENCY_CODE_NOT_VALID_LABEL = 'Currency code was not valid!';
         this.TURN_ERRORS_OFF_PROMPT = 'Do you want to turn errors off?';
         this.TURN_ERRORS_ON_PROMPT = 'Do you want to turn errors on?';
+        this.CONVERT_CELL_TO_VALUE_CELLS_LABEL = 'Do you want to convert the selected cell(s)...\n\n';
+        this.CONVERT_CELL_TO_VALUE_PROMPT = '\n...to value(s)?';
+        this.CONVERT_CELL_TO_VALUE_NOTE = 'This converts SPODDYCOINER functions in the selected cell(s) to the static value the cell currently contains (which means they will no longer be updated).';
         this.GENERIC_ERROR_MESSAGE = 'There was a problem, please try again.';
 
         /**
@@ -98,6 +102,9 @@ class Menu {
      * Basic menu when no authorization has been given
      */
     addNoAuthMenu() {
+        // TODO: refactor so menu is only instantiated in correct scopes
+        // cant make this a class level property atm
+        // because getUi is not available in all scopes (eg: custom functions)
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
             .addItem( this.MENU_ABOUT_LABEL, `${this.app}.View.Menu.about` )
@@ -111,13 +118,14 @@ class Menu {
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
             .addItem( this.MENU_CMC_API_KEY_LABEL, `${this.app}.View.Menu.updateCMCApiKey` )
-            .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
-                .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
-                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` ) )
             .addSubMenu( ui.createMenu( this.MENU_PREFERENCES_LABEL )
                 .addItem( `${this.MENU_DEFAULT_CURRENCY_LABEL} ${this.SpoddyCoiner.Model.GASProps.getDefaultCurrency()}`, `${this.app}.View.Menu.updateDefaultCurrency` )
                 .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
                 .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
+            .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
+                .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
+                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
+                .addItem( this.MENU_CONVERT_CELL_TO_VALUE, `${this.app}.View.Menu.convertCellsToValues` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
                 .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
@@ -280,13 +288,28 @@ class Menu {
     }
 
     /**
-     * 'Refresh all functions' menu item
+     * 'Refresh All Functions' menu item
      */
     refreshCustomFunctions() {
         this.promptRefreshAllFunctions(
             this.MENU_REFRESH_ALL_FUNCTIONS_LABEL,
             this.REFRESH_ALL_FUNCTIONS_NOTE,
         );
+    }
+
+    /**
+     * `Convert Cells To Values` menu item
+     */
+    convertCellsToValues() {
+        const ui = SpreadsheetApp.getUi();
+        const result = ui.alert(
+            this.MENU_CONVERT_CELL_TO_VALUE,
+            `${this.CONVERT_CELL_TO_VALUE_NOTE}\n\n${this.CONVERT_CELL_TO_VALUE_CELLS_LABEL} ${this.SpoddyCoiner.View.Sheet.getActiveCells()}\n${this.CONVERT_CELL_TO_VALUE_PROMPT}`,
+            ui.ButtonSet.YES_NO,
+        );
+        if ( result === ui.Button.YES ) {
+            this.SpoddyCoiner.handleConfirmConvertCellsToValues();
+        }
     }
 
     /**
@@ -305,7 +328,7 @@ class Menu {
             ui.ButtonSet.YES_NO,
         );
         if ( result === ui.Button.YES ) {
-            this.SpoddyCoiner.handleRefreshAllFunctionsConfirm();
+            this.SpoddyCoiner.handleConfirmRefreshAllFunctions();
             return true;
         }
         return false;

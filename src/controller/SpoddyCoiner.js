@@ -9,20 +9,20 @@ class SpoddyCoiner {
     /**
      * SpoddyCoiner Addon primary controller
      *
-     * @param {string} instanceName     the variable name of the SpoddyCoiner instance
+     * @param {string} instanceName     var name of SpoddyCoiner instance (must be in global scope)
      */
     constructor( instanceName ) {
+        /**
+         * Addon Name + Version
+         */
+        this.ADDON_NAME = 'SpoddyCoiner';
+        this.VERSION = '1.2.0.86';
+
         /**
          * the cost of AppsScript menu bindings
          * addMenuItem() functionName's must be the string name of a function in the global scope
          */
         this.instanceName = instanceName;
-
-        /**
-         * Addon Name + Version
-         */
-        this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.77';
 
         /**
          * a loose MVC pattern
@@ -44,6 +44,8 @@ class SpoddyCoiner {
     /**
      * Model change handlers
      * update the View as props change
+     *
+     * TODO: the C should bind these to the M's & C's
      */
     handleApiKeyChange() {
         this.View.Menu.addMenu();
@@ -64,8 +66,12 @@ class SpoddyCoiner {
     /**
      * View event handlers
      */
-    handleRefreshAllFunctionsConfirm() {
+    handleConfirmRefreshAllFunctions() {
         this.View.Sheet.refreshAllFunctions();
+    }
+
+    handleConfirmConvertCellsToValues() {
+        this.View.Sheet.convertCellsToValues();
     }
 }
 

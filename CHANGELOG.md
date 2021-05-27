@@ -5,7 +5,10 @@ Breaking changes between versions will be highligted.
 
 ## [1.2.0] - In Progress
 
-* Improved: menu layout, added tools menu + some new tools
+* Improved: menu layout, added tools menu
+* Improved: added some new tools...
+    * convert cells to values :)
+    * refresh all functions
 * Improved: cache handling
 * Improved: removed user Session usage
     * was used to lookup users current locale & set their default currency
