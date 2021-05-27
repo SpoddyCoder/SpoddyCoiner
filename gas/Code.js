@@ -10,7 +10,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.0.86';
+        this.VERSION = '1.2.1';
 
         /**
          * the cost of AppsScript menu bindings
@@ -844,6 +844,9 @@ class Menu {
      * Basic menu when no authorization has been given
      */
     addNoAuthMenu() {
+        // TODO: refactor so menu is only instantiated in correct scopes
+        // cant make this a class level property atm
+        // because getUi is not available in all scopes (eg: custom functions)
         const ui = SpreadsheetApp.getUi();
         ui.createAddonMenu()
             .addItem( this.MENU_ABOUT_LABEL, `${this.app}.View.Menu.about` )

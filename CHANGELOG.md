@@ -3,7 +3,7 @@
 All notable changes to the "SpoddyCoiner Google Sheets Addon" project will be documented in this file. 
 Breaking changes between versions will be highligted.
 
-## [1.2.0] - In Progress
+## [1.2.1] - 2021-05-27
 
 * Improved: menu layout, added tools menu
 * Improved: added some new tools...
