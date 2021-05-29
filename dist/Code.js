@@ -10,7 +10,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.1';
+        this.VERSION = '1.2.2';
 
         /**
          * the cost of AppsScript menu bindings
@@ -39,7 +39,7 @@ class SpoddyCoiner {
      * Model change handlers
      * update the View as props change
      *
-     * TODO: the C should bind these to the M's & C's
+     * TODO: the C should bind these to the M's & V's
      */
     handleApiKeyChange() {
         this.View.Menu.addMenu();
@@ -66,6 +66,10 @@ class SpoddyCoiner {
 
     handleConfirmConvertCellsToValues() {
         this.View.Sheet.convertCellsToValues();
+    }
+
+    handleConfirmRefreshSelectedCells() {
+        this.View.Sheet.refreshSelectedCells();
     }
 }
 
@@ -159,6 +163,12 @@ class CMC {
                     value = coinData[attribute];
                     Logger.log( `${coin} ${attribute} : ${value}` );
                 }
+                break;
+
+            case 'description_short':
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
+                [value] = coinData.description.match( /^(.*?)[.?!]\s/ ); // first sentence only
+                Logger.log( `${coin} ${attribute} : ${value}` );
                 break;
 
             case 'date_added':
@@ -369,11 +379,12 @@ class GASProps {
      * @returns {mixed}                 cache time in seconds or h/m/s
      */
     getCacheTime( humanReadable = false ) {
-        let cacheTime = parseFloat( this.docProps.getProperty( this.API_CACHE_TIME_KEY ) );
-        if ( cacheTime.isNaN ) {
-            cacheTime = this.DEFAULT_CACHE_TIME;
+        let cacheTime = this.docProps.getProperty( this.API_CACHE_TIME_KEY );
+        if ( !cacheTime ) {
+            cacheTime = parseFloat( this.DEFAULT_CACHE_TIME );
             this.docProps.setProperty( this.API_CACHE_TIME_KEY, cacheTime );
         }
+        cacheTime = parseFloat( cacheTime );
         if ( humanReadable ) {
             let text = '';
             const numHrs = Math.floor( ( ( cacheTime % 31536000 ) % 86400 ) / 3600 );
@@ -765,6 +776,7 @@ class Menu {
         this.MENU_CMC_API_KEY_LABEL = 'CoinMarketCap API Key';
         this.MENU_PREFERENCES_LABEL = 'Preferences';
         this.MENU_TOOLS_LABEL = 'Tools';
+        this.MENU_REFRESH_CELLS_LABEL = 'Refresh Selected Cells';
         this.MENU_REFRESH_ALL_FUNCTIONS_LABEL = 'Refresh All Functions';
         this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
         this.MENU_CONVERT_CELL_TO_VALUE = 'Convert Cells To Values';
@@ -795,7 +807,8 @@ class Menu {
         this.CLEAR_CACHE_PROMPT = 'Do you want to reset the API cache?';
         this.API_CACHE_CLEARED_LABEL = 'API cache cleared.';
         this.REFRESH_ALL_FUNCTIONS_NOTE = 'NB: this does not clear the cache.';
-        this.REFRESH_ALL_FUNCTIONS_PROMPT = 'Do you want to re-run all the SPODDYCOINER functions on the active sheet?';
+        this.REFRESH_ALL_FUNCTIONS_PROMPT = 'Do you want to re-run all the SPODDYCOINER functions on the active spreadsheet?';
+        this.REFRESH_SELECTED_CELLS_LABEL = 'Do you want to refresh SPOODYCOINER functions in the selected cell(s)...\n\n';
         this.NEW_CURRENCY_CODE_HEADING = 'Enter new 3 letter currency code (ISO 4217)';
         this.DEFAULT_CURRENCY_UPDATED_LABEL = 'Default Currency Updated';
         this.NEW_CURRENCY_LABEL = 'New currency code :';
@@ -827,7 +840,8 @@ class Menu {
             fcas_percent_change_24h: '24h change in score',
             fcas_point_change_24h: '24h change in score, as a percentage',
             name: 'The cryptocurrency name',
-            description: 'Full description of the project.',
+            description: 'Description of the crypto, including tokenomicsa & latest market data',
+            description_short: 'First sentence of description (dropping tokenomics and market data)',
             logo: 'The coin logo url (Tip: wrap this in the Google Sheets IMAGE function to show it in the cell)',
             date_added: 'Date added to CoinMarketCap (effectively the date it started)',
             year_added: 'Year added to CoinMarketCap',
@@ -865,9 +879,10 @@ class Menu {
                 .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
                 .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
             .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
+                .addItem( this.MENU_REFRESH_CELLS_LABEL, `${this.app}.View.Menu.refreshSelectedCells` )
                 .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
-                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
-                .addItem( this.MENU_CONVERT_CELL_TO_VALUE, `${this.app}.View.Menu.convertCellsToValues` ) )
+                .addItem( this.MENU_CONVERT_CELL_TO_VALUE, `${this.app}.View.Menu.convertCellsToValues` )
+                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
                 .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
@@ -1040,6 +1055,23 @@ class Menu {
     }
 
     /**
+     * 'Refresh Selected Cells' menu item
+     */
+    refreshSelectedCells() {
+        const ui = SpreadsheetApp.getUi();
+        const result = ui.alert(
+            this.MENU_REFRESH_CELLS_LABEL,
+            `${this.REFRESH_ALL_FUNCTIONS_NOTE}\n\n${this.REFRESH_SELECTED_CELLS_LABEL}${this.SpoddyCoiner.View.Sheet.getActiveCells()}`,
+            ui.ButtonSet.YES_NO,
+        );
+        if ( result === ui.Button.YES ) {
+            this.SpoddyCoiner.handleConfirmRefreshSelectedCells();
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * `Convert Cells To Values` menu item
      */
     convertCellsToValues() {
@@ -1098,7 +1130,7 @@ class Sheet {
             'SPODDYCOINER',
             'SPODDYCOINER_CONVERT',
         ];
-        this.FUNCTIONS_SEARCH_TERM = '=SPODDYCOINER';
+        this.FUNCTIONS_SEARCH_TERM = 'SPODDYCOINER';
 
         /**
          * Active sheet
@@ -1107,20 +1139,61 @@ class Sheet {
     }
 
     /**
-     * Refresh all SPODDYCOINER functions on the active sheet
-     *
+     * Refresh all SPODDYCOINER functions on the active spreadsheet
+     * These refresh functions use a hackly little workaround:
+     * write a temp value then write the actual value - seems to be the only approach...
      * https://tanaikech.github.io/2019/10/28/automatic-recalculation-of-custom-function-on-spreadsheet-part-2/
      */
     refreshAllFunctions() {
         const temp = Utilities.getUuid();
-        this.FUNCTIONS.forEach( ( e ) => {
-            this.spreadsheet.createTextFinder( `=${e}` )
+        this.FUNCTIONS.forEach( ( functionName ) => {
+            this.spreadsheet.createTextFinder( `=${functionName}` )
                 .matchFormulaText( true )
                 .replaceAllWith( temp );
             this.spreadsheet.createTextFinder( temp )
                 .matchFormulaText( true )
-                .replaceAllWith( `=${e}` );
+                .replaceAllWith( `=${functionName}` );
         } );
+    }
+
+    /**
+     * Refresh SPODDYCOINER functionsin the active range
+     */
+    refreshSelectedCells() {
+        const cells = this.spreadsheet.getActiveRange();
+        const values = cells.getValues();
+        const formulas = cells.getFormulas();
+
+        const temp = Utilities.getUuid();
+        const replacementValues = [];
+        formulas.forEach( ( formulasRow, formulasRowIndex ) => {
+            const newRow = [];
+            formulasRow.forEach( ( formula, formulasColumnIndex ) => {
+                const value = values[formulasRowIndex][formulasColumnIndex];
+                let finalValue = '';
+                if ( formula.includes( this.FUNCTIONS_SEARCH_TERM ) ) {
+                    finalValue = `${temp}${formula}`;
+                } else {
+                    finalValue = ( formula !== '' ) ? formula : value;
+                }
+                newRow.push( finalValue );
+            } );
+            replacementValues.push( newRow );
+        } );
+        cells.setValues( replacementValues );
+        SpreadsheetApp.flush();
+
+        replacementValues.forEach( ( row, rowIndex ) => {
+            row.forEach( ( column, columnIndex ) => {
+                let curValue = replacementValues[rowIndex][columnIndex];
+                if ( typeof curValue === 'string' ) {
+                    curValue = curValue.replace( temp, '' );
+                    replacementValues[rowIndex][columnIndex] = curValue;
+                }
+            } );
+        } );
+        cells.setValues( replacementValues );
+        SpreadsheetApp.flush();
     }
 
     /**
@@ -1148,6 +1221,11 @@ class Sheet {
         cells.setValues( replacementValues );
     }
 
+    /**
+     * Currently selected cell range in human readable format
+     *
+     * @returns {string}    currently selected cells in A1 notation
+     */
     getActiveCells() {
         return this.spreadsheet.getActiveRange().getA1Notation();
     }

@@ -10,7 +10,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.2.0';
+        this.VERSION = '1.2.2';
 
         /**
          * the cost of AppsScript menu bindings
@@ -168,7 +168,6 @@ class CMC {
             case 'description_short':
                 coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
                 [value] = coinData.description.match( /^(.*?)[.?!]\s/ ); // first sentence only
-                console.log(value);
                 Logger.log( `${coin} ${attribute} : ${value}` );
                 break;
 
@@ -841,7 +840,8 @@ class Menu {
             fcas_percent_change_24h: '24h change in score',
             fcas_point_change_24h: '24h change in score, as a percentage',
             name: 'The cryptocurrency name',
-            description: 'Full description of the project.',
+            description: 'Description of the crypto, including tokenomicsa & latest market data',
+            description_short: 'First sentence of description (dropping tokenomics and market data)',
             logo: 'The coin logo url (Tip: wrap this in the Google Sheets IMAGE function to show it in the cell)',
             date_added: 'Date added to CoinMarketCap (effectively the date it started)',
             year_added: 'Year added to CoinMarketCap',

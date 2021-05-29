@@ -3,11 +3,11 @@
 All notable changes to the "SpoddyCoiner Google Sheets Addon" project will be documented in this file. 
 Breaking changes between versions will be highligted.
 
-## [1.2.2] - In progress
+## [1.2.2] - 2021-05-29
 
 * Improved:
-    * Added new tool - refresh selected cells
-    * Added description_short attribute
+    * Added new tool "refresh selected cells"
+    * Added "description_short" attribute
 * Fixed:
     * Cache time not set to default on first install
     * Refresh functions now include cells that have wrapped spoddycoiner functions 
