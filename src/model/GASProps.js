@@ -111,11 +111,12 @@ class GASProps {
      * @returns {mixed}                 cache time in seconds or h/m/s
      */
     getCacheTime( humanReadable = false ) {
-        let cacheTime = parseFloat( this.docProps.getProperty( this.API_CACHE_TIME_KEY ) );
-        if ( cacheTime.isNaN ) {
-            cacheTime = this.DEFAULT_CACHE_TIME;
+        let cacheTime = this.docProps.getProperty( this.API_CACHE_TIME_KEY );
+        if ( !cacheTime ) {
+            cacheTime = parseFloat( this.DEFAULT_CACHE_TIME );
             this.docProps.setProperty( this.API_CACHE_TIME_KEY, cacheTime );
         }
+        cacheTime = parseFloat( cacheTime );
         if ( humanReadable ) {
             let text = '';
             const numHrs = Math.floor( ( ( cacheTime % 31536000 ) % 86400 ) / 3600 );

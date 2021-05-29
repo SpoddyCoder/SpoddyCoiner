@@ -5,7 +5,7 @@ Google Sheets Addon that gets data from the CoinMarketCap API...
 * Supports all cryptos / fiats listed on https://coinmarketcap.com/
     * Covers all your marginal coins/tokens/alts/shitcoins/shillcoins/moonshots/deepDDhonies
 * Works 100% with *FREE* CoinMarketCap API accounts
-    * Caches API responses to help reduce the number of calls and keep within your rate-limits
+    * Caches API responses & provides some handy tools to help reduce the number of calls and keep within your rate-limits
     * Great for free-tier accounts which have the lowest rate-limits
     * https://coinmarketcap.com/api/pricing/
 * Supports over 25 coin attributes
@@ -16,12 +16,12 @@ Google Sheets Addon that gets data from the CoinMarketCap API...
     * And all sorts of other metadata
 * Convert prices between any crypto / fiat combination
 
-SpodyCoiner pulls data only, it does not push data anywhwere, at any time. And it never will. Ever. See `POLICY.md` for further info.
+SpodyCoiner pulls data only, it does not push data anywhwere, at any time. And it never will. Ever. See [a relative link](POLICY.md) for further info.
 
 
 ## Custom Functions
 
-These work just like any standard function in Google Sheets...
+These work just like any standard function in Sheets...
 
 * `=SPODDYCOINER(coin, [attribute], [fiat])`
     * Get latest coin prices / data / metadata about `coin`
@@ -40,11 +40,9 @@ These work just like any standard function in Google Sheets...
 
 1. Install the SpoddyCoiner Addon (TODO instructions - pending Addon review)
 3. Get your CoinMarket API Key: https://coinmarketcap.com/api/pricing/
-4. Enter the API Key in the Google Sheets addon menu (Addons -> SpoddyCoiner -> CoinMarketCap API -> API Key)
+4. Enter the API Key in the Google Sheets addon menu (Addons -> SpoddyCoiner -> CoinMarketCap API Key)
 5. Tap the SpoddyCoiner function into a cell, you'll get a tooltip with more info: `=SPODDYCOINER(`
-6. See the SpoddyCoiner Addon menu for further help and preferences (Addons -> SpoddyCoiner)
-7. Error messages are shown in the cell, but this can be turned off in the preferences
-8. `symbol` is interchangeable for `coin` in error messages
+6. See the SpoddyCoiner Addon menu for further help, preferences & tools (Addons -> SpoddyCoiner)
 
 
 ### Examples
@@ -93,9 +91,41 @@ The `SPODDYCOINER` function supports the following `attributes`...
 * `url_source_code` - github url for the project source code (if available)
 
 
+### Tools
+
+The SpoddyCoiner Addon menu has a number of useful tools...
+
+* `Refresh Selected Cells`
+    * Refreshes the `SPODDYCOINER` functions in the selected cells
+    * Super useful if you hit an API rate limit error, simply wait a minute and refresh the cell(s)
+* `Refresh All Functions`
+    * Much like above but does a refresh of `SPODDYCOINER` functions across the whole spreadsheet
+* `Convert Cells to Values`
+    * Converts the selected cells to the raw value if they contain a `SPODDYCOINR` function
+    * Useful for cells containing coin attributes that are not expected to change (eg: `max_supply`, `year_added` etc.)
+    * The value will obviously never update again, but this will save you API calls
+
+        
+### Errors
+
+* Error messages from the CoinMarketCap API are shown in the cell
+    * This can be turned off in the preferences
+    * `symbol` is interchangeable for `coin` in error messages
+* Common errors:
+    * `Exceeded rate limit`
+        * CoinMarketCap API rate limits are relatively low on their free-tier accounts
+        * You can purchase a higher tier to increase rate-limits
+        * Rate-limits are reset every minute
+        * See the Addon -> SpoddyCoiner -> Tools menu for a handy way to refresh the `SPODDYCOINER` functions
+    * `Invalid value for symbol` or `symbol is not allowed to be empty`
+        * The coin ticker/symbol you've entered is not correct
+        * If you're using a cell reference, check it's accurate.
+
+
 ### About the API Cache
 
-The API cache is your friend :) It stops API calls being repeated unecessarily, helping to keep inside your rate-limit. Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchase a higher tier to increase this.
+The API cache is your friend :) It stops API calls being repeated unecessarily, helping to keep inside your rate-limit. 
+Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchase a higher tier to increase this.
 
 * Default cache time is 1 hour - the data you see may be up to 1 hour old
 * Cache time can be changed in the Addons -> SpoddyCoiner menu, the maximum is 6 hours (21600 seconds)

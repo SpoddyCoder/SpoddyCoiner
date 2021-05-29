@@ -17,6 +17,9 @@ function bustCache() {
 function convertCellsToValues() {
     App.View.Sheet.convertCellsToValues();
 }
+function refreshSelectedCells() {
+    App.View.Sheet.refreshSelectedCells();
+}
 // BTC
 function priceBTC() {
     SPODDYCOINER( 'BTC' );

@@ -16,7 +16,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.1';
+        this.VERSION = '1.2.2.0';
 
         /**
          * the cost of AppsScript menu bindings
@@ -45,7 +45,7 @@ class SpoddyCoiner {
      * Model change handlers
      * update the View as props change
      *
-     * TODO: the C should bind these to the M's & C's
+     * TODO: the C should bind these to the M's & V's
      */
     handleApiKeyChange() {
         this.View.Menu.addMenu();
@@ -72,6 +72,10 @@ class SpoddyCoiner {
 
     handleConfirmConvertCellsToValues() {
         this.View.Sheet.convertCellsToValues();
+    }
+
+    handleConfirmRefreshSelectedCells() {
+        this.View.Sheet.refreshSelectedCells();
     }
 }
 

@@ -18,7 +18,7 @@ class Sheet {
             'SPODDYCOINER',
             'SPODDYCOINER_CONVERT',
         ];
-        this.FUNCTIONS_SEARCH_TERM = '=SPODDYCOINER';
+        this.FUNCTIONS_SEARCH_TERM = 'SPODDYCOINER';
 
         /**
          * Active sheet
@@ -27,20 +27,61 @@ class Sheet {
     }
 
     /**
-     * Refresh all SPODDYCOINER functions on the active sheet
-     *
+     * Refresh all SPODDYCOINER functions on the active spreadsheet
+     * These refresh functions use a hackly little workaround:
+     * write a temp value then write the actual value - seems to be the only approach...
      * https://tanaikech.github.io/2019/10/28/automatic-recalculation-of-custom-function-on-spreadsheet-part-2/
      */
     refreshAllFunctions() {
         const temp = Utilities.getUuid();
-        this.FUNCTIONS.forEach( ( e ) => {
-            this.spreadsheet.createTextFinder( `=${e}` )
+        this.FUNCTIONS.forEach( ( functionName ) => {
+            this.spreadsheet.createTextFinder( `=${functionName}` )
                 .matchFormulaText( true )
                 .replaceAllWith( temp );
             this.spreadsheet.createTextFinder( temp )
                 .matchFormulaText( true )
-                .replaceAllWith( `=${e}` );
+                .replaceAllWith( `=${functionName}` );
         } );
+    }
+
+    /**
+     * Refresh SPODDYCOINER functionsin the active range
+     */
+    refreshSelectedCells() {
+        const cells = this.spreadsheet.getActiveRange();
+        const values = cells.getValues();
+        const formulas = cells.getFormulas();
+
+        const temp = Utilities.getUuid();
+        const replacementValues = [];
+        formulas.forEach( ( formulasRow, formulasRowIndex ) => {
+            const newRow = [];
+            formulasRow.forEach( ( formula, formulasColumnIndex ) => {
+                const value = values[formulasRowIndex][formulasColumnIndex];
+                let finalValue = '';
+                if ( formula.includes( this.FUNCTIONS_SEARCH_TERM ) ) {
+                    finalValue = `${temp}${formula}`;
+                } else {
+                    finalValue = ( formula !== '' ) ? formula : value;
+                }
+                newRow.push( finalValue );
+            } );
+            replacementValues.push( newRow );
+        } );
+        cells.setValues( replacementValues );
+        SpreadsheetApp.flush();
+
+        replacementValues.forEach( ( row, rowIndex ) => {
+            row.forEach( ( column, columnIndex ) => {
+                let curValue = replacementValues[rowIndex][columnIndex];
+                if ( typeof curValue === 'string' ) {
+                    curValue = curValue.replace( temp, '' );
+                    replacementValues[rowIndex][columnIndex] = curValue;
+                }
+            } );
+        } );
+        cells.setValues( replacementValues );
+        SpreadsheetApp.flush();
     }
 
     /**
@@ -68,6 +109,11 @@ class Sheet {
         cells.setValues( replacementValues );
     }
 
+    /**
+     * Currently selected cell range in human readable format
+     *
+     * @returns {string}    currently selected cells in A1 notation
+     */
     getActiveCells() {
         return this.spreadsheet.getActiveRange().getA1Notation();
     }

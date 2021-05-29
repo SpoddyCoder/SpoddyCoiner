@@ -23,6 +23,7 @@ class Menu {
         this.MENU_CMC_API_KEY_LABEL = 'CoinMarketCap API Key';
         this.MENU_PREFERENCES_LABEL = 'Preferences';
         this.MENU_TOOLS_LABEL = 'Tools';
+        this.MENU_REFRESH_CELLS_LABEL = 'Refresh Selected Cells';
         this.MENU_REFRESH_ALL_FUNCTIONS_LABEL = 'Refresh All Functions';
         this.MENU_CLEAR_CACHE_LABEL = 'Clear Cache';
         this.MENU_CONVERT_CELL_TO_VALUE = 'Convert Cells To Values';
@@ -53,7 +54,8 @@ class Menu {
         this.CLEAR_CACHE_PROMPT = 'Do you want to reset the API cache?';
         this.API_CACHE_CLEARED_LABEL = 'API cache cleared.';
         this.REFRESH_ALL_FUNCTIONS_NOTE = 'NB: this does not clear the cache.';
-        this.REFRESH_ALL_FUNCTIONS_PROMPT = 'Do you want to re-run all the SPODDYCOINER functions on the active sheet?';
+        this.REFRESH_ALL_FUNCTIONS_PROMPT = 'Do you want to re-run all the SPODDYCOINER functions on the active spreadsheet?';
+        this.REFRESH_SELECTED_CELLS_LABEL = 'Do you want to refresh SPOODYCOINER functions in the selected cell(s)...\n\n';
         this.NEW_CURRENCY_CODE_HEADING = 'Enter new 3 letter currency code (ISO 4217)';
         this.DEFAULT_CURRENCY_UPDATED_LABEL = 'Default Currency Updated';
         this.NEW_CURRENCY_LABEL = 'New currency code :';
@@ -123,9 +125,10 @@ class Menu {
                 .addItem( `${this.MENU_CACHE_TIME_LABEL} ${this.SpoddyCoiner.Model.GASProps.getCacheTime( true )}`, `${this.app}.View.Menu.updateAPICacheTime` )
                 .addItem( `${this.MENU_SHOW_ERRORS_LABEL}  ${this.SpoddyCoiner.Model.GASProps.getDisplayErrorMessages( true )}`, `${this.app}.View.Menu.showErrors` ) )
             .addSubMenu( ui.createMenu( this.MENU_TOOLS_LABEL )
+                .addItem( this.MENU_REFRESH_CELLS_LABEL, `${this.app}.View.Menu.refreshSelectedCells` )
                 .addItem( this.MENU_REFRESH_ALL_FUNCTIONS_LABEL, `${this.app}.View.Menu.refreshCustomFunctions` )
-                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` )
-                .addItem( this.MENU_CONVERT_CELL_TO_VALUE, `${this.app}.View.Menu.convertCellsToValues` ) )
+                .addItem( this.MENU_CONVERT_CELL_TO_VALUE, `${this.app}.View.Menu.convertCellsToValues` )
+                .addItem( this.MENU_CLEAR_CACHE_LABEL, `${this.app}.View.Menu.clearAPICache` ) )
             .addSeparator()
             .addSubMenu( ui.createMenu( this.MENU_DOCS_LABEL )
                 .addItem( this.MENU_FUNCTIONS_LABEL, `${this.app}.View.Menu.docsFunctions` )
@@ -295,6 +298,23 @@ class Menu {
             this.MENU_REFRESH_ALL_FUNCTIONS_LABEL,
             this.REFRESH_ALL_FUNCTIONS_NOTE,
         );
+    }
+
+    /**
+     * 'Refresh Selected Cells' menu item
+     */
+    refreshSelectedCells() {
+        const ui = SpreadsheetApp.getUi();
+        const result = ui.alert(
+            this.MENU_REFRESH_CELLS_LABEL,
+            `${this.REFRESH_ALL_FUNCTIONS_NOTE}\n\n${this.REFRESH_SELECTED_CELLS_LABEL}${this.SpoddyCoiner.View.Sheet.getActiveCells()}`,
+            ui.ButtonSet.YES_NO,
+        );
+        if ( result === ui.Button.YES ) {
+            this.SpoddyCoiner.handleConfirmRefreshSelectedCells();
+            return true;
+        }
+        return false;
     }
 
     /**
