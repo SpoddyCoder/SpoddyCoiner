@@ -55,6 +55,9 @@ All prices/quotes/conversions use CoinMarketCap latest market rates.
 * `=SPODDYCOINER_CONVERT( "ADA", 12, "GBP" )` - convert 12 ADA to GBP currency
 * `=SPODDYCOINER_CONVERT( "USD", 100, A1 )` - convert $100 to the coin/currency in cell A1
 
+NB: the functions only take a single cell range at present (eg A1).
+The next major release will allow full ranges as input (eg: A1:6, A1:F1 etc.)
+
 
 ### Coin Attributes
 
