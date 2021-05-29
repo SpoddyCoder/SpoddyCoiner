@@ -1,6 +1,6 @@
 # SpoddyCoiner
 
-Google Sheets Addon that gets data from the CoinMarketCap API...
+Google Sheets Addon that gets cryptocurrency prices, market & meta data from the CoinMarketCap API...
 
 * Supports all cryptos / fiats listed on https://coinmarketcap.com/
     * Covers all your marginal coins/tokens/alts/shitcoins/shillcoins/moonshots/deepDDhonies
@@ -30,10 +30,9 @@ These work just like any standard function in Sheets...
     * Default `fiat` currency can be set in the Addons -> SpoddyCoiner menu
 
 * `=SPODDYCOINER_CONVERT(coin, amount, coin)`
-    * Convert an `amount` from one `coin` to another
-    * `coin` can also be a currency code
+    * Convert an `amount` from one `coin` (or fiat) to another `coin` or (fiat)
 
-(all prices/quotes/conversions use CoinMarketCap latest market rates)
+All prices/quotes/conversions use CoinMarketCap latest market rates.
 
 
 ## Installation + Usage
@@ -77,7 +76,8 @@ The `SPODDYCOINER` function supports the following `attributes`...
 * `fcas_point_change_24h` - 24h change in FCAS score
 * `fcas_percent_change_24h` - 24h change in FCAS score as a percentage
 * `name` - coin name
-* `description` - full description of the project, history and purpose
+* `description` - description of the crypto, including tokenomicsa & latest market data.
+* `description_short` - first sentence of description (dropping tokenomics and market data)
 * `logo` - logo url
     * Tip: wrap this in the Google Sheets `IMAGE` function to show it in the cell
     * eg: `=IMAGE(SPODDYCOINER("BTC", "logo"))`
@@ -99,13 +99,28 @@ The SpoddyCoiner Addon menu has a number of useful tools...
     * Refreshes the `SPODDYCOINER` functions in the selected cells
     * Super useful if you hit an API rate limit error, simply wait a minute and refresh the cell(s)
 * `Refresh All Functions`
-    * Much like above but does a refresh of `SPODDYCOINER` functions across the whole spreadsheet
+    * Much like above but does a refresh of all `SPODDYCOINER` functions across the whole spreadsheet
 * `Convert Cells to Values`
     * Converts the selected cells to the raw value if they contain a `SPODDYCOINR` function
     * Useful for cells containing coin attributes that are not expected to change (eg: `max_supply`, `year_added` etc.)
     * The value will obviously never update again, but this will save you API calls
+* `Clear Cahce`
+    * Resets the API Cache - allowing you to get the latest value from the CoinMarketCap API
+    * NB: functions on the spreadsheet will not immediately update
+        * You will be asked if you wish to update all functions
+        * On large sheets with lots of data, you probably want to avoid refreshing all functions and instead focus on selected cells
 
         
+### About the API Cache
+
+The API cache is your friend. It stops API calls being repeated unecessarily, helping to keep inside your rate-limit. 
+Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchase a higher tier to increase this.
+
+* Default cache time is `1 hour` - the data you see may be up to 1 hour old
+* Cache time can be changed in the Addons -> SpoddyCoiner menu, the maximum is 6 hours (21600 seconds)
+* Cache can be cleared at any time in the Addons -> SpoddyCoiner menu
+
+
 ### Errors
 
 * Error messages from the CoinMarketCap API are shown in the cell
@@ -120,13 +135,3 @@ The SpoddyCoiner Addon menu has a number of useful tools...
     * `Invalid value for symbol` or `symbol is not allowed to be empty`
         * The coin ticker/symbol you've entered is not correct
         * If you're using a cell reference, check it's accurate.
-
-
-### About the API Cache
-
-The API cache is your friend :) It stops API calls being repeated unecessarily, helping to keep inside your rate-limit. 
-Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchase a higher tier to increase this.
-
-* Default cache time is 1 hour - the data you see may be up to 1 hour old
-* Cache time can be changed in the Addons -> SpoddyCoiner menu, the maximum is 6 hours (21600 seconds)
-* Cache can be cleared at any time in the Addons -> SpoddyCoiner menu

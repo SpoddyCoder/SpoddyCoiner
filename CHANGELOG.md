@@ -7,6 +7,7 @@ Breaking changes between versions will be highligted.
 
 * Improved:
     * Added new tool - refresh selected cells
+    * Added description_short attribute
 * Fixed:
     * Cache time not set to default on first install
     * Refresh functions now include cells that have wrapped spoddycoiner functions 

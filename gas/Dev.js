@@ -21,42 +21,28 @@ function refreshSelectedCells() {
     App.View.Sheet.refreshSelectedCells();
 }
 // BTC
-function priceBTC() {
+function BTC() {
     SPODDYCOINER( 'BTC' );
-}
-function marketCapBTC() {
     SPODDYCOINER( 'BTC', 'market_cap' );
-}
-function tagsBTC() {
     SPODDYCOINER( 'BTC', 'tags_top_5' );
+    SPODDYCOINER( 'BTC', 'tags_top_5' );
+    SPODDYCOINER( 'BTC', 'description_short' );
 }
 // ETH
-function priceETH() {
+function ETH() {
     SPODDYCOINER( 'ETH' );
-}
-function priceChange24ETH() {
     SPODDYCOINER( 'ETH', 'price_percent_change_24h' );
-}
-function fcasETH() {
     SPODDYCOINER( 'ETH', 'fcas_score' );
 }
 // LTC
-function priceLTC() {
+function LTC() {
     SPODDYCOINER( 'LTC' );
-}
-function yearAddedLTC() {
     SPODDYCOINER( 'LTC', 'year_added' );
-}
-function descriptionLTC() {
     SPODDYCOINER( 'LTC', 'description' );
 }
 // XMR
-function priceXMR() {
+function XMR() {
     SPODDYCOINER( 'XMR' );
-}
-function volumeXMR() {
     SPODDYCOINER( 'XMR', 'volume_24h' );
-}
-function maxSupplyXMR() {
     SPODDYCOINER( 'XMR', 'max_supply' );
 }

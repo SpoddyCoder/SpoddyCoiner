@@ -10,7 +10,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.1.12';
+        this.VERSION = '1.2.2.0';
 
         /**
          * the cost of AppsScript menu bindings
@@ -163,6 +163,13 @@ class CMC {
                     value = coinData[attribute];
                     Logger.log( `${coin} ${attribute} : ${value}` );
                 }
+                break;
+
+            case 'description_short':
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
+                [value] = coinData.description.match( /^(.*?)[.?!]\s/ ); // first sentence only
+                console.log(value);
+                Logger.log( `${coin} ${attribute} : ${value}` );
                 break;
 
             case 'date_added':
@@ -1133,7 +1140,8 @@ class Sheet {
 
     /**
      * Refresh all SPODDYCOINER functions on the active spreadsheet
-     *
+     * These refresh functions use a hackly little workaround:
+     * write a temp value then write the actual value - seems to be the only approach...
      * https://tanaikech.github.io/2019/10/28/automatic-recalculation-of-custom-function-on-spreadsheet-part-2/
      */
     refreshAllFunctions() {

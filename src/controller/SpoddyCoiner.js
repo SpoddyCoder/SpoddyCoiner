@@ -16,7 +16,7 @@ class SpoddyCoiner {
          * Addon Name + Version
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.2.0';
+        this.VERSION = '1.2.2.1';
 
         /**
          * the cost of AppsScript menu bindings

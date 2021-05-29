@@ -89,6 +89,12 @@ class CMC {
                 }
                 break;
 
+            case 'description_short':
+                coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
+                [value] = coinData.description.match( /^(.*?)[.?!]\s/ ); // first sentence only
+                Logger.log( `${coin} ${attribute} : ${value}` );
+                break;
+
             case 'date_added':
             case 'year_added':
                 coinData = this.SpoddyCoiner.Model.CMCApi.getCryptoMetadata( coin );
