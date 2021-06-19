@@ -1,5 +1,5 @@
 {
-    "name": "SpoddyCoiner",
+    "name": "spoddycoiner",
     "version" : "1.2.2",
     "description": "Google Sheets Addon that gets data from the CoinMarketCap API",
     "main": "src/controller/SpoddyCoiner.js",
