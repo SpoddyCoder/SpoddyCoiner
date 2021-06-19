@@ -13,10 +13,10 @@ class SpoddyCoiner {
      */
     constructor( instanceName ) {
         /**
-         * Addon Name + Version
+         * Addon Name + __VERSION__ (automatically update by build tool)
          */
         this.ADDON_NAME = 'SpoddyCoiner';
-        this.VERSION = '1.2.2';
+        this.VERSION = '__VERSION__';
 
         /**
          * the cost of AppsScript menu bindings

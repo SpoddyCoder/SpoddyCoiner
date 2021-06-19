@@ -5,6 +5,7 @@ dist/*
 # push to your own GAS id
 .clasp.json
 gas/appsscript.json
+gas/Code.js
 
 # heavier than the sun
 node_modules/*

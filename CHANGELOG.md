@@ -3,6 +3,12 @@
 All notable changes to the "SpoddyCoiner Google Sheets Addon" project will be documented in this file. 
 Breaking changes between versions will be highligted.
 
+## [1.2.3] - In progress
+
+* Improved:
+    * Build tools + process
+
+
 ## [1.2.2] - 2021-05-29
 
 * Improved:

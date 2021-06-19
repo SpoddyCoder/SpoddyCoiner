@@ -24,9 +24,9 @@ SpodyCoiner pulls data only, it does not push data anywhwere, at any time. And i
 These work just like any standard function in Sheets...
 
 * `=SPODDYCOINER(coin, [attribute], [fiat])`
-    * Get latest coin prices / data / metadata about `coin`
-    * Default `attribute` is "price". See below for full list of supported attributes.
-    * Some attribues (such as "price" or "market_cap") will be returned in `fiat` currency
+    * Get latest `coin` prices / data / metadata
+    * Default `attribute` is `"price"`. See below for full list of supported attributes.
+    * Some attribues (such as `"price"` or `"market_cap"`) will be returned in `fiat` currency
     * Default `fiat` currency can be set in the Addons -> SpoddyCoiner menu
 
 * `=SPODDYCOINER_CONVERT(coin, amount, coin)`
@@ -51,12 +51,13 @@ All prices/quotes/conversions use CoinMarketCap latest market rates.
 * `=SPODDYCOINER( "XRP", "market_cap", "JPY" )` - XRP market capitalization in Japanese Yen
 * `=SPODDYCOINER( "NANO", "fcas_grade_full" )` - The FCAS Grade description for NANO
 * `=SPODDYCOINER( A1 )` - latest price of coin in cell A1
+
 * `=SPODDYCOINER_CONVERT( "XMR", 0.0456, "BTC" )` - convert 0.0456 XMR to BTC
 * `=SPODDYCOINER_CONVERT( "ADA", 12, "GBP" )` - convert 12 ADA to GBP currency
 * `=SPODDYCOINER_CONVERT( "USD", 100, A1 )` - convert $100 to the coin/currency in cell A1
 
 NB: the functions only take a single cell range at present (eg A1).
-The next major release will allow full ranges as input (eg: A1:6, A1:F1 etc.)
+The next major release will allow full ranges as input (eg: A1:6, A1:F1)
 
 
 ### Coin Attributes
@@ -98,20 +99,19 @@ The `SPODDYCOINER` function supports the following `attributes`...
 
 The SpoddyCoiner Addon menu has a number of useful tools...
 
-* `Refresh Selected Cells`
+* #### Refresh Selected Cells
     * Refreshes the `SPODDYCOINER` functions in the selected cells
     * Super useful if you hit an API rate limit error, simply wait a minute and refresh the cell(s)
-* `Refresh All Functions`
+* #### Refresh All Functions
     * Much like above but does a refresh of all `SPODDYCOINER` functions across the whole spreadsheet
-* `Convert Cells to Values`
+    * On large sheets with lots of SpoddyCoiner function calls, you probably want to avoid refreshing all functions and instead focus on selected cells
+* #### Convert Cells to Values
     * Converts the selected cells to the raw value if they contain a `SPODDYCOINR` function
     * Useful for cells containing coin attributes that are not expected to change (eg: `max_supply`, `year_added` etc.)
     * The value will obviously never update again, but this will save you API calls
-* `Clear Cahce`
+* #### Clear Cahce
     * Resets the API Cache - allowing you to get the latest value from the CoinMarketCap API
-    * NB: functions on the spreadsheet will not immediately update
-        * You will be asked if you wish to update all functions
-        * On large sheets with lots of data, you probably want to avoid refreshing all functions and instead focus on selected cells
+    * NB: functions on the spreadsheet will not immediately update, but you will be asked if you wish to refresh all functions
 
         
 ### About the API Cache

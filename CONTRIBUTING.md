@@ -26,6 +26,6 @@ Contributions and pull requests welcome. Please note the guidelines...
 
 * Run `clasp push` to push the latest `gas/` build to the remote script
     * Should leave you with a `gas/appsscript.json` file on your local
-* `npm run build && npm run deploy` to do a dev build to `gas/` & run a `clasp push`
+* `npm run build && npm run deploy` to do a dev build to `gas/` & push it to your remote script
 * `npm run publish` to do a prod build to `dist/`
 * Feel free to ask questions in the Github issue tracker
