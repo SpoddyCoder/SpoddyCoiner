@@ -37,20 +37,20 @@ All prices/quotes/conversions use CoinMarketCap latest market rates.
 
 ## Installation + Usage
 
-1. Install the SpoddyCoiner Addon (this is a manual process atm, trying to get this submitted to the google apps store)
-    1. In your spreadhseet goto the menu Extensions -> Add Ons
-    2. A new AppsScript window will open, delete the default `myFunction` code
+1. Install the SpoddyCoiner Addon (manual process, trying to get this submitted to the google apps store)
+    1. In your spreadsheet goto the menu "Extensions -> Add Ons"
+    2. A new AppsScript editor window will open, delete the default `myFunction` code
     3. Copy and paste the SpoddyCoiner code from here: https://raw.githubusercontent.com/SpoddyCoder/SpoddyCoiner/master/dist/Code.js
-    4. Give the script a name like "SpoddyCoiner" (this will be what the app will be called int he extensions toolbar of your spreadsheet)
+    4. Give the script a name like "SpoddyCoiner" (what the app will be displayed as in the extensions toolbar)
     5. Click the "Save" icon in the toolbar
     6. Click "Run" and you will be asked to review permissions
-    7. You will see a warning that this app isn't verified, click "Advanced" to allow
-        1. The warnning is because this app reaches out to the CoinMarket API to get data, but it is perfectly safe, your data is always private to you
-        2. Please see the Policy for more information: https://github.com/SpoddyCoder/SpoddyCoiner/blob/master/POLICY.md
-    8. Click goto your spreadhseet, review the permissions and click "Allow"
+        1. You will see a warning that this app isn't verified, click "Advanced" to allow
+        2. The warnning is because this app reaches out to the CoinMarket API to get data - but it is perfectly safe, your data is always private to you
+        3. Please see the Policy for more information: https://github.com/SpoddyCoder/SpoddyCoiner/blob/master/POLICY.md
+    8. Click the link at the bottom to goto your spreadhseet, review the permissions and click "Allow"
     9. You can now close the script editor window
-    10. Go back to your spreadhseet and the extension shoudl now be available in the "Extensions" menu
-    11. NOTE: would like to get this app listed in the Google Apps store, but my limited understanding idnicates this will require an authentication server (time + money) - if you are an AppScript developer and think you can help here, please consider contributing.
+    10. Go back to your spreadhseet and the extension should now be available in the "Extensions" menu
+    11. NOTE: would like to get this app listed in the Google Apps store, but my limited understanding indicates this will require an authentication server (time + money) - if you are an AppScript developer and think you can help here, please consider contributing.
 3. Get your CoinMarket API Key: https://coinmarketcap.com/api/pricing/
 4. Enter the API Key in the Google Sheets addon menu (Extensions -> SpoddyCoiner -> CoinMarketCap API Key)
 5. Tap the SpoddyCoiner function into a cell, you'll get a tooltip with more info: `=SPODDYCOINER(`
@@ -147,7 +147,7 @@ Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchas
         * CoinMarketCap API rate limits are relatively low on their free-tier accounts
         * You can purchase a higher tier to increase rate-limits
         * Rate-limits are reset every minute
-        * See the Addon -> SpoddyCoiner -> Tools menu for a handy way to refresh the `SPODDYCOINER` functions
+        * See the Extensions -> SpoddyCoiner -> Tools menu for a handy way to refresh the `SPODDYCOINER` functions
     * `Invalid value for symbol` or `symbol is not allowed to be empty`
         * The coin ticker/symbol you've entered is not correct
         * If you're using a cell reference, check it's accurate.
