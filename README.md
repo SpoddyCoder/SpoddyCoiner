@@ -37,9 +37,22 @@ All prices/quotes/conversions use CoinMarketCap latest market rates.
 
 ## Installation + Usage
 
-1. Install the SpoddyCoiner Addon (TODO instructions - pending Addon review)
+1. Install the SpoddyCoiner Addon (this is a manual process atm, trying to get this submitted to the google apps store)
+    1. In your spreadhseet goto the menu Extensions -> Add Ons
+    2. A new AppsScript window will open, delete the default `myFunction` code
+    3. Copy and paste the SpoddyCoiner code from here: https://raw.githubusercontent.com/SpoddyCoder/SpoddyCoiner/master/dist/Code.js
+    4. Give the script a name like "SpoddyCoiner" (this will be what the app will be called int he extensions toolbar of your spreadsheet)
+    5. Click the "Save" icon in the toolbar
+    6. Click "Run" and you will be asked to review permissions
+    7. You will see a warning that this app isn't verified, click "Advanced" to allow
+        1. The warnning is because this app reaches out to the CoinMarket API to get data, but it is perfectly safe, your data is always private to you
+        2. Please see the Policy for more information: https://github.com/SpoddyCoder/SpoddyCoiner/blob/master/POLICY.md
+    8. Click goto your spreadhseet, review the permissions and click "Allow"
+    9. You can now close the script editor window
+    10. Go back to your spreadhseet and the extension shoudl now be available in the "Extensions" menu
+    11. NOTE: would like to get this app listed in the Google Apps store, but my limited understanding idnicates this will require an authentication server (time + money) - if you are an AppScript developer and think you can help here, please consider contributing.
 3. Get your CoinMarket API Key: https://coinmarketcap.com/api/pricing/
-4. Enter the API Key in the Google Sheets addon menu (Addons -> SpoddyCoiner -> CoinMarketCap API Key)
+4. Enter the API Key in the Google Sheets addon menu (Extensions -> SpoddyCoiner -> CoinMarketCap API Key)
 5. Tap the SpoddyCoiner function into a cell, you'll get a tooltip with more info: `=SPODDYCOINER(`
 6. See the SpoddyCoiner Addon menu for further help, preferences & tools (Addons -> SpoddyCoiner)
 
@@ -97,7 +110,7 @@ The `SPODDYCOINER` function supports the following `attributes`...
 
 ### Tools
 
-The SpoddyCoiner Addon menu has a number of useful tools...
+The SpoddyCoiner extension menu has a number of useful tools...
 
 * #### Refresh Selected Cells
     * Refreshes the `SPODDYCOINER` functions in the selected cells
@@ -120,8 +133,8 @@ The API cache is your friend. It stops API calls being repeated unecessarily, he
 Free CoinMarketCap API accounts have the lowest rate-limits, but you may purchase a higher tier to increase this.
 
 * Default cache time is `1 hour` - the data you see may be up to 1 hour old
-* Cache time can be changed in the Addons -> SpoddyCoiner menu, the maximum is 6 hours (21600 seconds)
-* Cache can be cleared at any time in the Addons -> SpoddyCoiner menu
+* Cache time can be changed in the Extennsions -> SpoddyCoiner menu, the maximum is 6 hours (21600 seconds)
+* Cache can be cleared at any time in the Extensions -> SpoddyCoiner menu
 
 
 ### Errors
